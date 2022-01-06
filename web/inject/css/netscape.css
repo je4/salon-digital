@@ -1,0 +1,14 @@
+
+@font-face {
+    font-family: 'Courier';
+    src: url(../font/unifont-14.0.01.woff2) format('woff2');
+}
+
+body {
+    font-family: 'Courier', monospace;
+    font-size: 12px;
+}
+
+table {
+    font-size: 8pt;
+}

@@ -1,0 +1,7 @@
+#certpem = "auto"
+#keypem = ""
+#basedir = "./web/static"
+#addr = "localhost:443"
+#addrext = "https://localhost/"
+#user = "sam"
+#password = "samantha"
