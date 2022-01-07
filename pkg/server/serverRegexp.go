@@ -10,6 +10,9 @@ import (
 
 var hostRegexp = regexp.MustCompile(`(?i)http://salon-digital\.zkm\.de`)
 var headRegexp = regexp.MustCompile(`(?i)<HEAD>`)
+var endBodyRegexp = regexp.MustCompile(`(?i)</BODY>`)
+var startFont = regexp.MustCompile(`(?i)<font`)
+var endFont = regexp.MustCompile(`(?i)</font`)
 
 func (s *Server) RegexpHandler(w http.ResponseWriter, r *http.Request) {
 	upath := r.URL.Path
@@ -32,9 +35,20 @@ func (s *Server) RegexpHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-type", "text/html")
 	data = hostRegexp.ReplaceAll(data, []byte(s.AddrExt))
 	data = headRegexp.ReplaceAll(data, []byte(fmt.Sprintf("<HEAD>\n"+
-		"<!-- CSS injections -->\n"+
+		"<!-- BEGIN CSS injections -->\n"+
 		"<link rel=\"stylesheet\" type=\"text/css\" href=\"%s/inject/css/netscape.css\">\n"+
-		"<!-- END CSS injection -->\n", s.AddrExt)))
+		"<script src=\"%s/inject/js/netscape.js\"></script>\n"+
+		"<script>\nwindow.onload = function() {\n  initNetscape();\n};\n</script>"+
+		"<!-- END CSS injection -->\n", s.AddrExt, s.AddrExt)))
+	/*
+		data = endBodyRegexp.ReplaceAll(data, []byte(fmt.Sprintf("<!-- BEGIN Javascript injections -->\n"+
+			"<link rel=\"stylesheet\" type=\"text/css\" href=\"%s/inject/css/netscape.css\">\n"+
+			"<!-- END Javascript injection -->\n"+
+			"</BODY>", s.AddrExt)))
+	*/
+	//	data = startFont.ReplaceAll(data, []byte("<x-font"))
+	//		data = endFont.ReplaceAll(data, []byte("</x-font"))
+
 	w.Write(data)
 	return
 
