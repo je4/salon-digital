@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"github.com/dlclark/regexp2"
 	"io/fs"
 	"net/http"
 	"regexp"
@@ -10,10 +11,11 @@ import (
 
 var hostSalonRegexp = regexp.MustCompile(`(?i)http://salon-digital\.zkm\.de`)
 var hostWWW2Regexp = regexp.MustCompile(`(?i)http://www2\.zkm\.de`)
-var headRegexp = regexp.MustCompile(`(?i)<HEAD>`)
-var endBodyRegexp = regexp.MustCompile(`(?i)</BODY>`)
-var startFont = regexp.MustCompile(`(?i)<font`)
-var endFont = regexp.MustCompile(`(?i)</font`)
+var headRegexp = regexp2.MustCompile(`<HEAD>(?!<TITLE></TITLE></HEAD>)`, regexp2.IgnoreCase)
+
+//var endBodyRegexp = regexp.MustCompile(`(?i)</BODY>`)
+//var startFont = regexp.MustCompile(`(?i)<font`)
+//var endFont = regexp.MustCompile(`(?i)</font>`)
 
 func (s *Server) RegexpHandler(w http.ResponseWriter, r *http.Request) {
 	upath := r.URL.Path
@@ -38,13 +40,16 @@ func (s *Server) RegexpHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-type", "text/html")
 	data = hostSalonRegexp.ReplaceAll(data, []byte(s.AddrExt+"/salon"))
 	data = hostWWW2Regexp.ReplaceAll(data, []byte(s.AddrExt+"/www2"))
-	if !strings.HasSuffix(upath, "login.html") {
-		data = headRegexp.ReplaceAll(data, []byte(fmt.Sprintf("<HEAD>\n"+
-			"<!-- BEGIN CSS injections -->\n"+
-			"<link rel=\"stylesheet\" type=\"text/css\" href=\"%s/inject/css/oldsalon.css\">\n"+
-			"<script src=\"%s/inject/js/oldsalon.js\"></script>\n"+
-			"<script>\nwindow.onload = function() {\n  initNetscape();\n};\n</script>"+
-			"<!-- END CSS injection -->\n", s.AddrExt, s.AddrExt)))
+	dataStr, err := headRegexp.Replace(string(data), fmt.Sprintf("<HEAD>\n"+
+		"<!-- BEGIN CSS injections -->\n"+
+		"<link rel=\"stylesheet\" type=\"text/css\" href=\"%s/inject/css/oldsalon.css\">\n"+
+		"<script src=\"%s/inject/js/oldsalon.js\"></script>\n"+
+		"<script>\nwindow.onload = function() {\n  initNetscape();\n};\n</script>"+
+		"<!-- END CSS injection -->\n", s.AddrExt, s.AddrExt), 0, -1)
+	if err != nil {
+		// todo: something
+	} else {
+		data = []byte(dataStr)
 	}
 	w.Write(data)
 	return

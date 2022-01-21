@@ -1,0 +1,18 @@
+basedir = "./web/static"
+
+[image]
+"grey.gif" = "salon/img/bg/grey.gif"
+"index.gif" = "salon/img/bg/index.gif"
+"lb-curve.gif" = "salon/img/bg/lb-curve.gif"
+"lt-curve.gif" = "salon/img/bg/lt-curve.gif"
+"r.gif" = "salon/img/bg/r.gif"
+"r-2long.gif" = "salon/img/bg/r-2long.gif"
+"r-long.gif" = "salon/img/bg/r-long.gif"
+"rb-curve.gif" = "salon/img/bg/rb-curve.gif"
+"rt-curve.gif" = "salon/img/bg/rt-curve.gif"
+"startup.gif" = "salon/img/bg/startup.gif"
+"sdmllogo.gif" = "salon/img/sdmllogo.gif"
+"zkm3.gif" = "salon/img/zkm3.gif"
+"salon.gif" = "salon/img/salon.gif"
+
+

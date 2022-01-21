@@ -66,6 +66,7 @@ customElements.define('sd-font', sdFont);
 
 function initNetscape() {
 
+    console.log("initNetscape(): "+window.location.href)
     // all elements which get class from attributes
     const classElements = ['font'];
     classElements.forEach((elemName) => {
