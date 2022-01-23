@@ -22,14 +22,15 @@ func main() {
 	flag.Parse()
 
 	var config = &SalonDigitalConfig{
-		LogFile:   "",
-		LogLevel:  "DEBUG",
-		LogFormat: `%{time:2006-01-02T15:04:05.000} %{module}::%{shortfunc} [%{shortfile}] > %{level:.5s} - %{message}`,
-		BaseDir:   *basedir,
-		Addr:      "localhost:80",
-		AddrExt:   "http://localhost:80/",
-		User:      "jane",
-		Password:  "doe",
+		LogFile:       "",
+		LogLevel:      "DEBUG",
+		LogFormat:     `%{time:2006-01-02T15:04:05.000} %{module}::%{shortfunc} [%{shortfile}] > %{level:.5s} - %{message}`,
+		BaseDir:       *basedir,
+		Addr:          "localhost:80",
+		AddrExt:       "http://localhost:80/",
+		User:          "jane",
+		Password:      "doe",
+		ImageTemplate: "web/imagetemplate/Page01.json",
 	}
 	if err := LoadSalonDigitalConfig(*configfile, config); err != nil {
 		log.Printf("cannot load config file: %v", err)

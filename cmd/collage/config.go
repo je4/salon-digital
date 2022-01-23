@@ -9,8 +9,9 @@ import (
 
 // main config structure for toml file
 type CollageConfig struct {
-	BaseDir string            `toml:"basedir"`
-	Image   map[string]string `toml:"image"`
+	BaseDir   string            `toml:"basedir"`
+	OutputDir string            `toml:"outputdir"`
+	Image     map[string]string `toml:"image"`
 }
 
 func LoadCollageConfig(fp string, conf *CollageConfig) error {

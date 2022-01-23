@@ -1,4 +1,5 @@
 basedir = "./web/static"
+outputdir = "./web/imagetemplate"
 
 [image]
 "grey.gif" = "salon/img/bg/grey.gif"
@@ -13,6 +14,6 @@ basedir = "./web/static"
 "startup.gif" = "salon/img/bg/startup.gif"
 "sdmllogo.gif" = "salon/img/sdmllogo.gif"
 "zkm3.gif" = "salon/img/zkm3.gif"
-"salon.gif" = "salon/img/salon.gif"
+"salon.gif" = "salon/salon.gif"
 
 

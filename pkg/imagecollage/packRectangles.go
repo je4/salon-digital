@@ -74,15 +74,15 @@ import (
 //       INCLUDE SECTION
 //
 
-type stbrp_coord int
+type STBRPCoord int
 
 const STBRP__MAXVAL = 0x7fffffff
 
 // Mostly for internal use, but this is the maximum supported coordinate value.
 
-// STBRP_DEF int stbrp_pack_rects (stbrp_context *context, stbrp_rect *rects, int num_rects);
+// STBRP_DEF int STBRPPackRects (stbrp_context *context, STBRPRect *rects, int num_rects);
 // Assign packed locations to rectangles. The rectangles are of type
-// 'stbrp_rect' defined below, stored in the array 'rects', and there
+// 'STBRPRect' defined below, stored in the array 'rects', and there
 // are 'num_rects' many of them.
 //
 // Rectangles which are successfully packed have the 'was_packed' flag
@@ -95,7 +95,7 @@ const STBRP__MAXVAL = 0x7fffffff
 // while this function is running, as the function temporarily reorders
 // the array while it executes.
 //
-// To pack into another rectangle, you need to call stbrp_init_target
+// To pack into another rectangle, you need to call STBRPInitTarget
 // again. To continue packing into the same rectangle, you can call
 // this function again. Calling this multiple times with multiple rect
 // arrays will probably produce worse packing results than calling it
@@ -105,20 +105,31 @@ const STBRP__MAXVAL = 0x7fffffff
 // The function returns 1 if all of the rectangles were successfully
 // packed and 0 otherwise.
 
-type stbrp_rect struct {
+type STBRPRect struct {
 	// reserved for your use:
 	id int
 
 	// input:
-	w, h stbrp_coord
+	w, h STBRPCoord
 
 	// output:
-	x, y       stbrp_coord
+	x, y       STBRPCoord
 	was_packed int // non-zero if valid packing
 
 } // 16 bytes, nominally
 
-// STBRP_DEF void stbrp_init_target (stbrp_context *context, int width, int height, stbrp_node *nodes, int num_nodes);
+func NewSTBRPRect(w, h int) *STBRPRect {
+	rect := &STBRPRect{}
+	rect.SetDimensions(w, h)
+	return rect
+}
+
+func (rect *STBRPRect) SetDimensions(w, h int) {
+	rect.w = STBRPCoord(w)
+	rect.h = STBRPCoord(h)
+}
+
+// STBRP_DEF void STBRPInitTarget (stbrp_context *context, int width, int height, stbrp_node *nodes, int num_nodes);
 // Initialize a rectangle packer to:
 //    pack a rectangle that is 'width' by 'height' in dimensions
 //    using temporary storage provided by the array 'nodes', which is 'num_nodes' long
@@ -126,7 +137,7 @@ type stbrp_rect struct {
 // You must call this function every time you start packing into a new target.
 //
 // There is no "shutdown" function. The 'nodes' memory must stay valid for
-// the following stbrp_pack_rects() call (or calls), but can be freed after
+// the following STBRPPackRects() call (or calls), but can be freed after
 // the call (or calls) finish.
 //
 // Note: to guarantee best results, either:
@@ -160,21 +171,21 @@ const (
 // the details of the following structures don't matter to you, but they must
 // be visible so you can handle the memory allocations for them
 
-type stbrpNode struct {
-	x, y stbrp_coord
-	next *stbrpNode
+type STBRPNode struct {
+	x, y STBRPCoord
+	next *STBRPNode
 }
 
-type stbrpContext struct {
+type STBRPContext struct {
 	width       int
 	height      int
 	align       int
 	init_mode   int
 	heuristic   int
 	num_nodes   int
-	active_head *stbrpNode
-	free_head   *stbrpNode
-	extra       []stbrpNode // we allocate two extra nodes so optimal user-node-count is 'width' not 'width+2'
+	active_head *STBRPNode
+	free_head   *STBRPNode
+	extra       []STBRPNode // we allocate two extra nodes so optimal user-node-count is 'width' not 'width+2'
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -184,7 +195,7 @@ type stbrpContext struct {
 
 const STBRP__INIT_skyline = 1
 
-func stbrp_setup_heuristic(context *stbrpContext, heuristic int) error {
+func stbrp_setup_heuristic(context *STBRPContext, heuristic int) error {
 	switch context.init_mode {
 	case STBRP__INIT_skyline:
 		if !(heuristic == STBRP_HEURISTIC_Skyline_BL_sortHeight || heuristic == STBRP_HEURISTIC_Skyline_BF_sortHeight) {
@@ -197,7 +208,7 @@ func stbrp_setup_heuristic(context *stbrpContext, heuristic int) error {
 	return nil
 }
 
-func stbrpSetupAllowOutOfMem(context *stbrpContext, allow_out_of_mem bool) error {
+func stbrpSetupAllowOutOfMem(context *STBRPContext, allow_out_of_mem bool) error {
 	if allow_out_of_mem {
 		// if it's ok to run out of memory, then don't bother aligning them;
 		// this gives better packing, but may fail due to OOM (even though
@@ -217,7 +228,7 @@ func stbrpSetupAllowOutOfMem(context *stbrpContext, allow_out_of_mem bool) error
 	return nil
 }
 
-func stbrp_init_target(context *stbrpContext, width, height int, nodes []*stbrpNode, num_nodes int) {
+func STBRPInitTarget(context *STBRPContext, width, height int, nodes []*STBRPNode) {
 	var i int
 	for i = 0; i < len(nodes)-1; i++ {
 		nodes[i].next = nodes[i+1]
@@ -229,46 +240,46 @@ func stbrp_init_target(context *stbrpContext, width, height int, nodes []*stbrpN
 	context.active_head = &context.extra[0]
 	context.width = width
 	context.height = height
-	context.num_nodes = num_nodes
+	context.num_nodes = len(nodes)
 	stbrpSetupAllowOutOfMem(context, false)
 
 	// node 0 is the full width, node 1 is the sentinel (lets us not store width explicitly)
 	context.extra[0].x = 0
 	context.extra[0].y = 0
 	context.extra[0].next = &context.extra[1]
-	context.extra[1].x = stbrp_coord(width)
+	context.extra[1].x = STBRPCoord(width)
 	context.extra[1].y = (1 << 30)
 	context.extra[1].next = nil
 }
 
 // find minimum y position if it starts at x1
-func stbrpSkylineFindMinY(c *stbrpContext, first *stbrpNode, x0, width int, pwaste *int) int {
-	var node *stbrpNode = first
+func stbrpSkylineFindMinY(c *STBRPContext, first *STBRPNode, x0, width int, pwaste *int) int {
+	var node *STBRPNode = first
 	var x1 = x0 + width
 	var min_y, visited_width, waste_area int
 
-	if first.x <= stbrp_coord(x0) {
-		log.Fatalf("assertion failed: first.x <= stbrp_coord(x0)")
+	if first.x <= STBRPCoord(x0) {
+		log.Fatalf("assertion failed: first.x <= STBRPCoord(x0)")
 	}
-	if node.next.x > stbrp_coord(x0) {
-		log.Fatalf("assertion failed: node.next.x > stbrp_coord(x0)")
+	if node.next.x > STBRPCoord(x0) {
+		log.Fatalf("assertion failed: node.next.x > STBRPCoord(x0)")
 	}
-	if node.x <= stbrp_coord(x0) {
-		log.Fatalf("assertion failed: node.x <= stbrp_coord(x0)")
+	if node.x <= STBRPCoord(x0) {
+		log.Fatalf("assertion failed: node.x <= STBRPCoord(x0)")
 	}
 
 	min_y = 0
 	waste_area = 0
 	visited_width = 0
-	for node.x < stbrp_coord(x1) {
-		if node.y > stbrp_coord(min_y) {
+	for node.x < STBRPCoord(x1) {
+		if node.y > STBRPCoord(min_y) {
 			// raise min_y higher.
 			// we've accounted for all waste up to min_y,
 			// but we'll now add more waste for everything we've visted
-			waste_area += int(stbrp_coord(visited_width) * (node.y - stbrp_coord(min_y)))
+			waste_area += int(STBRPCoord(visited_width) * (node.y - STBRPCoord(min_y)))
 			min_y = int(node.y)
 			// the first time through, visited_width might be reduced
-			if node.x < stbrp_coord(x0) {
+			if node.x < STBRPCoord(x0) {
 				visited_width += int(node.next.x) - x0
 			} else {
 				visited_width += int(node.next.x - node.x)
@@ -291,18 +302,18 @@ func stbrpSkylineFindMinY(c *stbrpContext, first *stbrpNode, x0, width int, pwas
 
 type stbrp__findresult struct {
 	x, y      int
-	prev_link **stbrpNode
+	prev_link **STBRPNode
 }
 
-func stbrpSkylineFindBestPos(c *stbrpContext, width, height int) stbrp__findresult {
+func stbrpSkylineFindBestPos(c *STBRPContext, width, height int) stbrp__findresult {
 	var best_waste int = (1 << 30)
 	var best_x int
 	var best_y = (1 << 30)
 	var fr stbrp__findresult
-	var prev **stbrpNode
-	var node *stbrpNode
-	var tail *stbrpNode
-	var best **stbrpNode
+	var prev **STBRPNode
+	var node *STBRPNode
+	var tail *STBRPNode
+	var best **STBRPNode
 
 	// align to multiple of c->align
 	width = width + c.align - 1
@@ -413,10 +424,10 @@ func stbrpSkylineFindBestPos(c *stbrpContext, width, height int) stbrp__findresu
 	return fr
 }
 
-func stbrpSkylinePackRectangle(context *stbrpContext, width, height int) stbrp__findresult {
+func stbrpSkylinePackRectangle(context *STBRPContext, width, height int) stbrp__findresult {
 	// find best position according to heuristic
 	var res = stbrpSkylineFindBestPos(context, width, height)
-	var node, cur *stbrpNode
+	var node, cur *STBRPNode
 
 	// bail if:
 	//    1. it failed
@@ -429,8 +440,8 @@ func stbrpSkylinePackRectangle(context *stbrpContext, width, height int) stbrp__
 
 	// on success, create new node
 	node = context.free_head
-	node.x = stbrp_coord(res.x)
-	node.y = stbrp_coord(res.y + height)
+	node.x = STBRPCoord(res.x)
+	node.y = STBRPCoord(res.y + height)
 
 	context.free_head = node.next
 
@@ -462,13 +473,13 @@ func stbrpSkylinePackRectangle(context *stbrpContext, width, height int) stbrp__
 	node.next = cur
 
 	if int(cur.x) < res.x+width {
-		cur.x = stbrp_coord(res.x + width)
+		cur.x = STBRPCoord(res.x + width)
 	}
 
 	return res
 }
 
-func rectHeightCompare(p, q *stbrp_rect) int {
+func rectHeightCompare(p, q *STBRPRect) int {
 	if p.h > q.h {
 		return -1
 	}
@@ -486,7 +497,7 @@ func rectHeightCompare(p, q *stbrp_rect) int {
 	}
 }
 
-func rectOriginalOrder(p, q *stbrp_rect) int {
+func rectOriginalOrder(p, q *STBRPRect) int {
 	if p.was_packed < q.was_packed {
 		return -1
 	} else {
@@ -498,12 +509,12 @@ func rectOriginalOrder(p, q *stbrp_rect) int {
 	}
 }
 
-func stbrp_pack_rects(context *stbrpContext, rects []*stbrp_rect, num_rects int) int {
+func STBRPPackRects(context *STBRPContext, rects []*STBRPRect) int {
 	var i int
 	var all_rects_packed = 1
 
 	// we use the 'was_packed' field internally to allow sorting/unsorting
-	for i = 0; i < num_rects; i++ {
+	for i = 0; i < len(rects); i++ {
 		rects[i].was_packed = i
 	}
 
@@ -511,15 +522,15 @@ func stbrp_pack_rects(context *stbrpContext, rects []*stbrp_rect, num_rects int)
 	//qsort(rects, num_rects, sizeof(rects[0]), rect_height_compare);
 	sort.Slice(rects, func(i, j int) bool { return rectHeightCompare(rects[i], rects[j]) > 0 })
 
-	for i = 0; i < num_rects; i++ {
+	for i = 0; i < len(rects); i++ {
 		if rects[i].w == 0 || rects[i].h == 0 {
 			rects[i].x = 0
 			rects[i].y = 0 // empty rect needs no space
 		} else {
 			var fr = stbrpSkylinePackRectangle(context, int(rects[i].w), int(rects[i].h))
 			if fr.prev_link != nil {
-				rects[i].x = stbrp_coord(fr.x)
-				rects[i].y = stbrp_coord(fr.y)
+				rects[i].x = STBRPCoord(fr.x)
+				rects[i].y = STBRPCoord(fr.y)
 			} else {
 				rects[i].x = STBRP__MAXVAL
 				rects[i].y = STBRP__MAXVAL
@@ -532,7 +543,7 @@ func stbrp_pack_rects(context *stbrpContext, rects []*stbrp_rect, num_rects int)
 	sort.Slice(rects, func(i, j int) bool { return rectOriginalOrder(rects[i], rects[j]) > 0 })
 
 	// set was_packed flags and all_rects_packed status
-	for i = 0; i < num_rects; i++ {
+	for i = 0; i < len(rects); i++ {
 		if !(int(rects[i].x) == STBRP__MAXVAL && int(rects[i].y) == STBRP__MAXVAL) {
 			rects[i].was_packed = 1
 		} else {
