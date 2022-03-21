@@ -5,3 +5,7 @@
 #addrext = "https://localhost/"
 #user = "sam"
 #password = "samantha"
+picturedir = "./pfsEmbed"
+staticdir = "./web/static"
+templatedir = "./web/template"
+templatedev = true

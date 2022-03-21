@@ -5,56 +5,27 @@ import (
 	"github.com/pkg/errors"
 	"path/filepath"
 	"strings"
-	"time"
 )
 
-type Endpoint struct {
-	Host string `toml:"host"`
-	Port int    `toml:"port"`
-}
-
-type Forward struct {
-	Local  Endpoint `toml:"local"`
-	Remote Endpoint `toml:"remote"`
-}
-
-type SSHTunnel struct {
-	User       string             `toml:"user"`
-	PrivateKey string             `toml:"privatekey"`
-	Endpoint   Endpoint           `toml:"endpoint"`
-	Forward    map[string]Forward `toml:"forward"`
-}
-
-type duration struct {
-	time.Duration
-}
-
-func (d *duration) UnmarshalText(text []byte) error {
-	var err error
-	d.Duration, err = time.ParseDuration(string(text))
-	return err
-}
-
-type DBMySQL struct {
-	DSN            string
-	ConnMaxTimeout duration
-	Schema         string
-}
-
-// main config structure for toml file
 type SalonDigitalConfig struct {
-	CertPem       string `toml:"certpem"`
-	KeyPem        string `toml:"keypem"`
-	LogFile       string `toml:"logfile"`
-	LogLevel      string `toml:"loglevel"`
-	LogFormat     string `toml:"logformat"`
-	AccessLog     string `toml:"accesslog"`
-	BaseDir       string `toml:"basedir"`
-	Addr          string `toml:"addr"`
-	AddrExt       string `toml:"addrext"`
-	User          string `toml:"user"`
-	Password      string `toml:"password"`
-	ImageTemplate string `toml:"imagetemplate"`
+	CertPem        string `toml:"certpem"`
+	KeyPem         string `toml:"keypem"`
+	LogFile        string `toml:"logfile"`
+	LogLevel       string `toml:"loglevel"`
+	LogFormat      string `toml:"logformat"`
+	AccessLog      string `toml:"accesslog"`
+	BaseDir        string `toml:"basedir"`
+	StaticDir      string `toml:"staticdir"`
+	TemplateDir    string `toml:"templatedir"`
+	PictureDir     string `toml:"picturedir"`
+	Addr           string `toml:"addr"`
+	AddrExt        string `toml:"addrext"`
+	User           string `toml:"user"`
+	Password       string `toml:"password"`
+	ImageTemplate  string `toml:"imagetemplate"`
+	PictureFSImage string `toml:"picturefsimage"`
+	PictureFSJSON  string `toml:"picturefsjson"`
+	TemplateDev    bool   `toml:"templatedev"`
 }
 
 func LoadSalonDigitalConfig(fp string, conf *SalonDigitalConfig) error {

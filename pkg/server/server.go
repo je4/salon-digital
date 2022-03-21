@@ -3,10 +3,8 @@ package server
 import (
 	"context"
 	"crypto/tls"
-	"fmt"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"github.com/je4/salon-digital/v2/web"
 	dcert "github.com/je4/utils/v2/pkg/cert"
 	"github.com/op/go-logging"
 	"github.com/pkg/errors"
@@ -32,10 +30,20 @@ type Server struct {
 	accessLog        io.Writer
 	templates        map[string]*template.Template
 	httpStaticServer http.Handler
+	httpImageServer  http.Handler
 	staticFS         fs.FS
+	templateFS       fs.FS
+	templateDev      bool
 }
 
-func NewServer(service, addr, addrExt, name, password string, log *logging.Logger, accessLog io.Writer) (*Server, error) {
+func NewServer(service, addr, addrExt string,
+	pfs fs.FS,
+	staticFS fs.FS,
+	templateFS fs.FS,
+	name, password string,
+	templateDev bool,
+	log *logging.Logger,
+	accessLog io.Writer) (*Server, error) {
 	host, port, err := net.SplitHostPort(addr)
 	if err != nil {
 		return nil, errors.Wrapf(err, "cannot split address %s", addr)
@@ -48,35 +56,35 @@ func NewServer(service, addr, addrExt, name, password string, log *logging.Logge
 	*/
 
 	srv := &Server{
-		service:   service,
-		host:      host,
-		port:      port,
-		AddrExt:   strings.TrimRight(addrExt, "/"),
-		name:      name,
-		password:  password,
-		log:       log,
-		accessLog: accessLog,
-		templates: map[string]*template.Template{},
+		service:          service,
+		host:             host,
+		port:             port,
+		httpImageServer:  http.FileServer(http.FS(pfs)),
+		staticFS:         staticFS,
+		httpStaticServer: http.FileServer(http.FS(staticFS)),
+		AddrExt:          strings.TrimRight(addrExt, "/"),
+		name:             name,
+		password:         password,
+		templateDev:      templateDev,
+		log:              log,
+		accessLog:        accessLog,
+		templateFS:       templateFS,
+		templates:        map[string]*template.Template{},
 	}
-	srv.staticFS, err = fs.Sub(web.StaticFS, "static")
-	if err != nil {
-		return nil, errors.Wrap(err, "cannot get subtree of embedded static")
-	}
-	srv.httpStaticServer = http.FileServer(http.FS(srv.staticFS))
 
 	return srv, srv.InitTemplates()
 }
 
 func (s *Server) InitTemplates() error {
-	entries, err := web.TemplateFS.ReadDir("template")
+	entries, err := fs.ReadDir(s.templateFS, ".")
 	if err != nil {
 		return errors.Wrapf(err, "cannot read template folder %s", "template")
 	}
 	for _, entry := range entries {
 		name := entry.Name()
-		tpl, err := template.ParseFS(web.TemplateFS, "template/"+name)
+		tpl, err := template.ParseFS(s.templateFS, name)
 		if err != nil {
-			return errors.New(fmt.Sprintf("cannot parse template: %s", name))
+			return errors.Wrapf(err, "cannot parse template: %s", name)
 		}
 		s.templates[name] = tpl
 	}
@@ -85,21 +93,24 @@ func (s *Server) InitTemplates() error {
 
 func (s *Server) ListenAndServe(cert, key string) (err error) {
 	router := mux.NewRouter()
+	/*
+		injectFS, err := fs.Sub(web.InjectFS, "inject")
+		if err != nil {
+			return errors.Wrap(err, "cannot get subtree of embedded inject")
+		}
+		httpInjectServer := http.FileServer(http.FS(injectFS))
 
-	injectFS, err := fs.Sub(web.InjectFS, "inject")
-	if err != nil {
-		return errors.Wrap(err, "cannot get subtree of embedded inject")
-	}
-	httpInjectServer := http.FileServer(http.FS(injectFS))
+		router.PathPrefix("/inject").Handler(
+			http.StripPrefix("/inject", httpInjectServer),
+		).Methods("GET")
 
-	router.PathPrefix("/inject").Handler(
-		http.StripPrefix("/inject", httpInjectServer),
-	).Methods("GET")
-
-	router.PathPrefix("/").Handler(
-		http.StripPrefix("/", http.HandlerFunc(s.RegexpHandler)),
-	).Methods("GET")
-
+		router.PathPrefix("/").Handler(
+			http.StripPrefix("/", http.HandlerFunc(s.RegexpHandler)),
+		).Methods("GET")
+	*/
+	router.PathPrefix("/img").Handler(http.StripPrefix("/img", s.httpImageServer)).Methods("GET")
+	router.PathPrefix("/static").Handler(http.StripPrefix("/static", s.httpStaticServer)).Methods("GET")
+	router.PathPrefix("/").HandlerFunc(s.MainHandler).Methods("GET")
 	loggedRouter := handlers.CombinedLoggingHandler(s.accessLog, handlers.ProxyHeaders(router))
 	addr := net.JoinHostPort(s.host, s.port)
 	s.srv = &http.Server{

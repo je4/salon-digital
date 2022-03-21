@@ -1,11 +1,18 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"flag"
+	"github.com/je4/PictureFS/v2/pkg/PictureFS"
+	"github.com/je4/salon-digital/v2/pfsEmbed"
 	"github.com/je4/salon-digital/v2/pkg/server"
+	"github.com/je4/salon-digital/v2/web"
 	lm "github.com/je4/utils/v2/pkg/logger"
+	"image"
 	"io"
+	"io/fs"
 	"log"
 	"os"
 	"os/signal"
@@ -54,12 +61,60 @@ func main() {
 		accessLog = f
 	}
 
+	logger.Info("loading PictureFS...")
+	var pfs *PictureFS.FS
+	if config.PictureFSImage != "" {
+		pfs, err = PictureFS.NewFSFile(config.PictureFSImage, config.PictureFSJSON)
+		if err != nil {
+			logger.Panicf("cannot load PictureFS(%s/%s): %v", config.PictureFSImage, config.PictureFSJSON, err)
+		}
+	} else {
+
+		pfsImage, _, err := image.Decode(bytes.NewBuffer(pfsEmbed.SalonDigitalImage))
+		if err != nil {
+			logger.Panicf("cannot decode embedded PictureFS: %v", err)
+		}
+
+		var layout = PictureFS.Layout{}
+		if err := json.Unmarshal(pfsEmbed.SalonDigitalJSON, &layout); err != nil {
+			logger.Panicf("cannot unmarshal embedded PictureFS: %v", err)
+		}
+		pfs, err = PictureFS.NewFS(pfsImage, layout)
+		if err != nil {
+			logger.Panicf("cannot initiate PictureFS: %v", err)
+		}
+	}
+
+	var staticFS, templateFS fs.FS
+
+	if config.StaticDir == "" {
+		staticFS, err = fs.Sub(web.StaticFS, "static")
+		if err != nil {
+			logger.Panicf("cannot get subtree of static: %v", err)
+		}
+	} else {
+		staticFS = os.DirFS(config.StaticDir)
+	}
+
+	if config.TemplateDir == "" {
+		templateFS, err = fs.Sub(web.TemplateFS, "template")
+		if err != nil {
+			logger.Panicf("cannot get subtree of embedded template: %v", err)
+		}
+	} else {
+		templateFS = os.DirFS(config.TemplateDir)
+	}
+
 	srv, err := server.NewServer(
 		"Salon-Digital",
 		config.Addr,
 		config.AddrExt,
+		pfs,
+		staticFS,
+		templateFS,
 		config.User,
 		config.Password,
+		config.TemplateDev,
 		logger,
 		accessLog,
 	)
