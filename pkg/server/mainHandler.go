@@ -7,11 +7,18 @@ import (
 
 func (s *Server) MainHandler(w http.ResponseWriter, r *http.Request) {
 	if s.templateDev {
-		s.InitTemplates()
+		if err := s.InitTemplates(); err != nil {
+			s.log.Errorf("error initializing templates: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(fmt.Sprintf("%v", err)))
+			return
+		}
 	}
 	url := r.URL
 	if url.Path == "/" {
-		if err := s.templates["grid.gohtml"].Execute(w, nil); err != nil {
+		lab := NewLabyrinth(7)
+
+		if err := s.templates["grid.gohtml"].Execute(w, struct{ Lab *Labyrinth }{Lab: lab}); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte(fmt.Sprintf("%v", err)))
 			return

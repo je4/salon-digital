@@ -1,28 +1,199 @@
 <!DOCTYPE html>
 <html>
 <head>
+    {{$labsize := .Lab.Size}}
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <link rel="icon" type="image/png" href="./static/sdmllogo.png" size="54x54">
-    <link rel="apple-touch-icon" href="./img/sdmllogo.gif">
+    <link rel="icon" type="image/png" href="./img/sdmllogo.png" size="54x54">
+    <link rel="apple-touch-icon" href="./img/sdmllogo.png">
     <meta name="theme-color" content="#ffffff">
     <title>Salon Digital</title>
     <link rel="stylesheet" href="./static/css/salon.css" type="text/css">
+    <style>
+        {{$middle := div (sub $labsize 1) 2}}
+        /* 3x3 Matrix */
+        @media (max-width: 1000px) {
+        {{$min := sub $middle 2}}
+        {{$max := add $min 4}}
+            /* {{$middle}} {{$min}} {{$max}} */
+        {{range $i := (iterate $labsize)}}
+        {{range $j := (iterate $labsize)}}
+            #lab_{{$i}}_{{$j}} {
+        {{if and (and (gt $i $min) (lt $i $max)) (and (gt $j $min) (lt $j $max))}}
+                grid-column: calc({{$j}} - {{$min}} + 1) / span 1;
+                grid-row: calc({{$i}} - {{$min}} + 2) / span 1;
+                background-color: white;
+        {{else}}
+                visibility: hidden;
+                display: none;
+        {{end}}
+            }
+
+        {{end}}
+        {{end}}
+        }
+        /* 5x5 Matrix */
+        @media (min-width: 1000px) {
+        {{$min = sub $middle 4}}
+        {{$max = add $min 6}}
+            /* {{$middle}} {{$min}} {{$max}} */
+        {{range $i := (iterate $labsize)}}
+        {{range $j := (iterate $labsize)}}
+            #lab_{{$i}}_{{$j}} {
+            {{if and (and (gt $i $min) (lt $i $max)) (and (gt $j $min) (lt $j $max))}}
+                grid-column: calc({{$j}} - {{$min}} + 1) / span 1;
+                grid-row: calc({{$i}} - {{$min}} + 2) / span 1;
+                background-color: white;
+            {{else}} visibility: hidden;
+                display: none;
+            {{end}}
+            }
+        {{end}}
+        {{end}}
+        }
+
+    </style>
 </head>
 <body>
-<div class="sdmlwrapper">
-    <div class="top left">top.left</div>
-    <div class="top center">top.center</div>
-    <div class="top right">top.right</div>
+<div id="sdmlwrapper">
+    <div id="gridtopleft" class="center"><img class="pixelated" src="./img/old-list/tent.png"></div>
+    <div id="gridtopcenter" class="center">
+        <div style="text-align: center; width: 100%;">wvdc: Navigating SDML, now on (-186185685)</div>
+    </div>
+    <div id="gridtopright" class="center"><img class="pixelated" src="./img/zkm3.png"></div>
 
-    <div class="middle left">middle.left</div>
-    <div class="labyrinth">labyrinth</div>
-    <div class="content">content</div>
-    <div class="middle right2">middle.right2</div>
+    <div id="gridmiddleleft"  class="hcenter">
+        <table class="navtable">
+            <tr><td><img class="pixelated hcenter" src="./img/old-list/n.png"></td></tr>
+            <tr><td><img class="pixelated hcenter" src="./img/old-list/a.png"></td></tr>
+            <tr><td><img class="pixelated hcenter" src="./img/old-list/c.png"></td></tr>
+            <tr><td><img class="pixelated hcenter" src="./img/old-list/e.png"></td></tr>
+            <tr><td><img class="pixelated hcenter" src="./img/old-list/s.png"></td></tr>
+        </table>
+    </div>
+    <div id="gridlabyrinthheading"></div>
+    <div id="gridcontentheading" class="center">
+        <div id="direction" style="text-align: center; width: 100%;">go west</div>
+    </div>
+    <!-- div id="gridlabyrinth"></div -->
+    {{range $i, $row := .Lab.Fields}}
+        {{range $j, $col := $row}}
+            <div id="lab_{{$i}}_{{$j}}" class="labcell"><img alt="{{$col}} {{$i}}/{{$j}}" src="./img/labyrinth/{{$col}}.png" class="pixelated"></div>
+        {{end}}{{end}}
+    <div id="gridcontent"></div>
+    <div id="gridmiddleright2"></div>
+    <div id="gridlabyrinthsub"></div>
 
-    <div class="bottom left">bottom.left</div>
-    <div class="bottom center">bottom.center</div>
-    <div class="bottom right">bottom.right</div>
+    <div id="gridbottomleft"></div>
+    <div id="gridbottomcenter" class="center">
+        <div style="text-align: center; width: 100%;">
+        Click on the Labyrinth do find your way in SDML. There are Paths,
+        crossings and - dead ends, of course. Rooms may be reachable or not - just try!
+        </div>
+    </div>
+    <div id="gridbottomright"></div>
 </div>
+
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+    let lab = JSON.parse('{{toPrettyJson .Lab}}');
+
+    function getDirection(x, y) {
+        // x == y
+        // x == lab.Size-1 - y
+        let half = (lab.Size-1)/2;
+        let dirStr = "";
+        if( x > y && x < lab.Size-1 - y ) {
+            dirStr = "north";
+        }
+        if( x < y && x < lab.Size-1 - y ) {
+            dirStr = "south";
+        }
+        if( x < half && y == half ) {
+            dirStr = "west";
+        }
+        if( x > half && y == half ) {
+            dirStr = "east";
+        }
+        return dirStr;
+    }
+
+    function showDirection(x, y) {
+        let half = (lab.Size-1)/2;
+        let dirStr = "";
+        if( x == half && y < half ) {
+            dirStr = "go north";
+            if( !lab.North ) dirStr += " not possible"
+        }
+        if( x == half && y > half ) {
+            dirStr = "go south";
+            if( !lab.South ) dirStr += " not possible"
+        }
+        if( x < half && y == half ) {
+            dirStr = "go west";
+            if( !lab.West ) dirStr += " not possible"
+        }
+        if( x > half && y == half ) {
+            dirStr = "go east";
+            if( !lab.East ) dirStr += " not possible"
+        }
+        let dirField = document.getElementById("direction")
+        dirField.innerText = dirStr;
+    }
+
+    function move(x, y) {
+        let half = (lab.Size-1)/2;
+        let dirStr = "";
+        if( x == half && y < half && lab.North ) {
+            dirStr = "north";
+        }
+        if( x == half && y > half && lab.South ) {
+            dirStr = "south";
+        }
+        if( x < half && y == half && lab.West ) {
+            dirStr = "west";
+        }
+        if( x > half && y == half && lab.East ) {
+            dirStr = "east";
+        }
+        if( dirStr == "" ) return;
+        var xhr = new XMLHttpRequest();
+        var url = "move/"+dirStr;
+        xhr.open("POST", url, true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                let json = JSON.parse(xhr.responseText);
+                if( json == null ) return;
+                lab = json;
+                let i = 0;
+                for( i = 0; i < lab.Size; i++ ) {
+                    let j = 0;
+                    for( j = 0; j < lab.Size; j++ ) {
+                        let fld = document.getElementById("lab_"+i+"_"+j);
+                        let img = fld.firstChild;
+                        img.src = "./img/labyrinth/"+lab.Fields[i][j]+".png";
+                    }
+                }
+            }
+            let dirField = document.getElementById("direction")
+            dirField.innerText = "";
+        };
+        var data = JSON.stringify(lab);
+        xhr.send(data);
+    }
+
+    let field = null;
+    {{range $i, $row := .Lab.Fields}}
+        {{range $j, $col := $row}}
+            field = document.getElementById("lab_{{$i}}_{{$j}}");
+            field.addEventListener("mouseover", function(event) {
+                showDirection({{$j}}, {{$i}})
+            }, false);
+            field.addEventListener("mousedown", function(event) {
+                move({{$j}}, {{$i}})
+            }, false);
+    {{end}}{{end}}
+</script>
 </body>
 </html>

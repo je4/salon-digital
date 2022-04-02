@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"crypto/tls"
+	"github.com/Masterminds/sprig"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	dcert "github.com/je4/utils/v2/pkg/cert"
@@ -80,9 +81,18 @@ func (s *Server) InitTemplates() error {
 	if err != nil {
 		return errors.Wrapf(err, "cannot read template folder %s", "template")
 	}
+	funcMap := sprig.FuncMap()
+	funcMap["iterate"] = func(count int) []int {
+		var i int
+		var Items []int
+		for i = 0; i < count; i++ {
+			Items = append(Items, i)
+		}
+		return Items
+	}
 	for _, entry := range entries {
 		name := entry.Name()
-		tpl, err := template.ParseFS(s.templateFS, name)
+		tpl, err := template.New(name).Funcs(funcMap).ParseFS(s.templateFS, name)
 		if err != nil {
 			return errors.Wrapf(err, "cannot parse template: %s", name)
 		}
@@ -111,6 +121,7 @@ func (s *Server) ListenAndServe(cert, key string) (err error) {
 	router.PathPrefix("/img").Handler(http.StripPrefix("/img", s.httpImageServer)).Methods("GET")
 	router.PathPrefix("/static").Handler(http.StripPrefix("/static", s.httpStaticServer)).Methods("GET")
 	router.PathPrefix("/").HandlerFunc(s.MainHandler).Methods("GET")
+	router.HandleFunc("/move/{direction}", s.MoveHandler).Methods("POST")
 	loggedRouter := handlers.CombinedLoggingHandler(s.accessLog, handlers.ProxyHeaders(router))
 	addr := net.JoinHostPort(s.host, s.port)
 	s.srv = &http.Server{
