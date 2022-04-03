@@ -4,7 +4,7 @@ go 1.17
 
 replace github.com/je4/salon-digital/v2 => ./
 
-replace github.com/je4/PictureFS/v2 => ../PictureFS/
+//replace github.com/je4/PictureFS/v2 => ../PictureFS/
 
 require (
 	github.com/BurntSushi/toml v1.0.0
