@@ -34,7 +34,7 @@ func (s *Server) MoveHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	jenc := json.NewEncoder(w)
-	jenc.SetIndent("", "  ")
+	//jenc.SetIndent("", "  ")
 	if err := jenc.Encode(lab); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		errStr := fmt.Sprintf("internal error encoding json: %v", err)

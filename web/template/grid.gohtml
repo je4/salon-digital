@@ -10,46 +10,65 @@
     <title>Salon Digital</title>
     <link rel="stylesheet" href="./static/css/salon.css" type="text/css">
     <style>
-        {{$middle := div (sub $labsize 1) 2}}
+        :root {
+            --grid-max-width: {{$labsize}};
+        }
+
+        {{- $middle := div (sub $labsize 1) 2}}
         /* 3x3 Matrix */
         @media (max-width: 1000px) {
-        {{$min := sub $middle 2}}
-        {{$max := add $min 4}}
+        {{- $min := sub $middle 2}}
+        {{- $max := add $min 4}}
             /* {{$middle}} {{$min}} {{$max}} */
-        {{range $i := (iterate $labsize)}}
-        {{range $j := (iterate $labsize)}}
+        {{- range $i := (iterate $labsize)}}
+        {{- range $j := (iterate $labsize)}}
             #lab_{{$i}}_{{$j}} {
-        {{if and (and (gt $i $min) (lt $i $max)) (and (gt $j $min) (lt $j $max))}}
+        {{- if and (and (gt $i $min) (lt $i $max)) (and (gt $j $min) (lt $j $max))}}
                 grid-column: calc({{$j}} - {{$min}} + 1) / span 1;
                 grid-row: calc({{$i}} - {{$min}} + 2) / span 1;
                 background-color: white;
-        {{else}}
+        {{- else}}
                 visibility: hidden;
                 display: none;
-        {{end}}
+        {{- end}}
+            }
+            #lab_{{$i}}_{{$j}} img {
+            {{- if and (eq $i $middle) (eq $j $middle)}}
+            {{- else}}
+                filter: brightness(0.7);
+            {{- end}}
             }
 
-        {{end}}
-        {{end}}
+        {{- end}}
+        {{- end}}
         }
         /* 5x5 Matrix */
         @media (min-width: 1000px) {
-        {{$min = sub $middle 4}}
-        {{$max = add $min 6}}
+        {{- $min = sub $middle 3}}
+        {{- $max = add $min 6}}
             /* {{$middle}} {{$min}} {{$max}} */
-        {{range $i := (iterate $labsize)}}
-        {{range $j := (iterate $labsize)}}
+        {{- range $i := (iterate $labsize)}}
+        {{- range $j := (iterate $labsize)}}
             #lab_{{$i}}_{{$j}} {
-            {{if and (and (gt $i $min) (lt $i $max)) (and (gt $j $min) (lt $j $max))}}
+            {{- if and (and (gt $i $min) (lt $i $max)) (and (gt $j $min) (lt $j $max))}}
                 grid-column: calc({{$j}} - {{$min}} + 1) / span 1;
                 grid-row: calc({{$i}} - {{$min}} + 2) / span 1;
                 background-color: white;
-            {{else}} visibility: hidden;
+            {{- else}}
+                visibility: hidden;
                 display: none;
-            {{end}}
+            {{- end}}
             }
-        {{end}}
-        {{end}}
+
+            #lab_{{$i}}_{{$j}} img {
+            {{- if and (eq $i $middle) (eq $j $middle)}}
+            {{- else}}
+                filter: brightness(0.9);
+            {{- end}}
+            }
+
+        {{- end}}
+        {{- end}}
         }
 
     </style>
@@ -76,10 +95,11 @@
         <div id="direction" style="text-align: center; width: 100%;">go west</div>
     </div>
     <!-- div id="gridlabyrinth"></div -->
-    {{range $i, $row := .Lab.Fields}}
-        {{range $j, $col := $row}}
+    {{- range $i, $row := .Lab.Fields}}
+        {{- range $j, $col := $row}}
             <div id="lab_{{$i}}_{{$j}}" class="labcell"><img alt="{{$col}} {{$i}}/{{$j}}" src="./img/labyrinth/{{$col}}.png" class="pixelated"></div>
-        {{end}}{{end}}
+        {{- end}}
+    {{- end}}
     <div id="gridcontent"></div>
     <div id="gridmiddleright2"></div>
     <div id="gridlabyrinthsub"></div>
@@ -99,28 +119,52 @@
     let lab = JSON.parse('{{toPrettyJson .Lab}}');
 
     function getDirection(x, y) {
+        let bodyStyle = getComputedStyle(document.body);
+        let labSize = parseInt(bodyStyle.getPropertyValue('--grid-max-width'));
         // x == y
         // x == lab.Size-1 - y
-        let half = (lab.Size-1)/2;
+        let backY = labSize-1 -y
         let dirStr = "";
-        if( x > y && x < lab.Size-1 - y ) {
+        let logStr = labSize+": "+x+"/"+y;
+        if( x > y && x < backY ) {
             dirStr = "north";
-        }
-        if( x < y && x < lab.Size-1 - y ) {
-            dirStr = "south";
-        }
-        if( x < half && y == half ) {
+            logStr += "  "+x+" > "+y+" && "+x+" < "+backY
+        } else if( x < y && x < backY ) {
             dirStr = "west";
-        }
-        if( x > half && y == half ) {
+            logStr += "  "+x+" < "+y+" && "+x+" < "+backY
+        } else if( x > y && x > backY ) {
             dirStr = "east";
+            logStr +="  "+x+" > "+y+" && "+x+" > "+backY
+        } else if( x < y && x > backY ) {
+            dirStr = "south";
+            logStr += "  "+x+" < "+y+" && "+x+" > "+backY
+        } else {
+            logStr += "  "+backY
         }
+        logStr += " - "+dirStr
+        console.log(logStr)
         return dirStr;
     }
 
     function showDirection(x, y) {
-        let half = (lab.Size-1)/2;
-        let dirStr = "";
+        //let half = (lab.Size-1)/2;
+        let dirStr = getDirection(x, y);
+        switch( dirStr ) {
+            case "north":
+                if( !lab.North ) dirStr += " not possible"
+                break;
+            case "south":
+                if( !lab.South ) dirStr += " not possible"
+                break;
+            case "east":
+                if( !lab.East ) dirStr += " not possible"
+                break;
+            case "west":
+                if( !lab.West ) dirStr += " not possible"
+                break;
+            default:
+        }
+        /*
         if( x == half && y < half ) {
             dirStr = "go north";
             if( !lab.North ) dirStr += " not possible"
@@ -137,13 +181,31 @@
             dirStr = "go east";
             if( !lab.East ) dirStr += " not possible"
         }
+        */
+        if( dirStr != "") dirStr = "go "+dirStr;
         let dirField = document.getElementById("direction")
         dirField.innerText = dirStr;
     }
 
     function move(x, y) {
         let half = (lab.Size-1)/2;
-        let dirStr = "";
+        let dirStr = getDirection(x, y);
+        switch( dirStr ) {
+            case "north":
+                if( !lab.North ) dirStr = "";
+                break;
+            case "south":
+                if( !lab.South ) dirStr = "";
+                break;
+            case "east":
+                if( !lab.East ) dirStr = "";
+                break;
+            case "west":
+                if( !lab.West ) dirStr = "";
+                break;
+            default:
+        }
+        /*
         if( x == half && y < half && lab.North ) {
             dirStr = "north";
         }
@@ -156,6 +218,7 @@
         if( x > half && y == half && lab.East ) {
             dirStr = "east";
         }
+        */
         if( dirStr == "" ) return;
         var xhr = new XMLHttpRequest();
         var url = "move/"+dirStr;
