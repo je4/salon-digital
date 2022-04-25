@@ -1,4 +1,4 @@
-package server
+package salon
 
 import (
 	"math/rand"
@@ -38,25 +38,13 @@ type Labyrinth struct {
 	Detail                   string
 	Size                     int
 	North, East, South, West bool
+	Signatures               []string
 }
 
-func getField(connect, noconnect int) string {
-	var list = []string{}
-	for fldname, fldval := range Field {
-		if fldval&connect == connect &&
-			fldval&^noconnect == fldval {
-			list = append(list, fldname)
-		}
-	}
-	if len(list) == 0 {
-		return ""
-	}
-	return list[rand.Intn(len(list))]
-}
-
-func NewLabyrinth(size int) *Labyrinth {
+func NewLabyrinth(size int, signatures []string) *Labyrinth {
 	lab := &Labyrinth{
-		Size: size,
+		Size:       size,
+		Signatures: signatures,
 	}
 	lab.init()
 	return lab
@@ -72,6 +60,20 @@ func (lab *Labyrinth) init() {
 	}
 	lab.fill()
 
+}
+
+func (lab *Labyrinth) getField(connect, noconnect int) string {
+	var list = []string{}
+	for fldname, fldval := range Field {
+		if fldval&connect == connect &&
+			fldval&^noconnect == fldval {
+			list = append(list, fldname)
+		}
+	}
+	if len(list) == 0 {
+		return ""
+	}
+	return list[rand.Intn(len(list))]
 }
 
 func (lab *Labyrinth) getConnections(i, j int) (connect, noconnect int) {
@@ -138,7 +140,7 @@ func (lab *Labyrinth) fill() {
 		for j := 0; j < lab.Size; j++ {
 			if lab.Fields[i][j] == "" {
 				conn, noconn := lab.getConnections(i, j)
-				lab.Fields[i][j] = getField(conn, noconn)
+				lab.Fields[i][j] = lab.getField(conn, noconn)
 			}
 		}
 	}

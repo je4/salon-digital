@@ -5,7 +5,10 @@
 #addrext = "https://localhost/"
 #user = "sam"
 #password = "samantha"
-picturedir = "./pfsEmbed"
-staticdir = "./web/static"
-templatedir = "./web/template"
+[salon]
+picturefsimage = "./salon/embed/pfsEmbed/salon-digital.png"
+picturefsjson = "./salon/embed/pfsEmbed/salon-digital.json"
+staticdir = "./salon/embed/static"
+templatedir = "./salon/embed/template/template"
 templatedev = true
+bleveindex = "c:/temp/bangbang/bangbang.bleve"

@@ -12,10 +12,10 @@ type Media struct {
 }
 
 type Content struct {
-	Title    string           `json:"title"`
-	Subtitle string           `json:"subtitle"`
-	Persons  []Person         `json:"persons"`
-	Year     string           `json:"year"`
-	Poster   string           `json:"poster"`
-	Medias   map[string]Media `json:"medias"`
+	Title    string             `json:"title"`
+	Subtitle string             `json:"subtitle"`
+	Persons  []Person           `json:"persons"`
+	Year     string             `json:"year"`
+	Poster   string             `json:"poster"`
+	Medias   map[string][]Media `json:"medias"`
 }

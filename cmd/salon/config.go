@@ -7,25 +7,28 @@ import (
 	"strings"
 )
 
-type SalonDigitalConfig struct {
-	CertPem        string `toml:"certpem"`
-	KeyPem         string `toml:"keypem"`
-	LogFile        string `toml:"logfile"`
-	LogLevel       string `toml:"loglevel"`
-	LogFormat      string `toml:"logformat"`
-	AccessLog      string `toml:"accesslog"`
-	BaseDir        string `toml:"basedir"`
-	StaticDir      string `toml:"staticdir"`
+type SalonConfig struct {
+	TemplateDev    bool   `toml:"templatedev"`
+	BleveIndex     string `toml:"bleveindex"`
 	TemplateDir    string `toml:"templatedir"`
-	PictureDir     string `toml:"picturedir"`
-	Addr           string `toml:"addr"`
-	AddrExt        string `toml:"addrext"`
-	User           string `toml:"user"`
-	Password       string `toml:"password"`
-	ImageTemplate  string `toml:"imagetemplate"`
+	StaticDir      string `toml:"staticdir"`
 	PictureFSImage string `toml:"picturefsimage"`
 	PictureFSJSON  string `toml:"picturefsjson"`
-	TemplateDev    bool   `toml:"templatedev"`
+}
+
+type SalonDigitalConfig struct {
+	CertPem   string      `toml:"certpem"`
+	KeyPem    string      `toml:"keypem"`
+	LogFile   string      `toml:"logfile"`
+	LogLevel  string      `toml:"loglevel"`
+	LogFormat string      `toml:"logformat"`
+	AccessLog string      `toml:"accesslog"`
+	BaseDir   string      `toml:"basedir"`
+	Addr      string      `toml:"addr"`
+	AddrExt   string      `toml:"addrext"`
+	User      string      `toml:"user"`
+	Password  string      `toml:"password"`
+	Salon     SalonConfig `toml:"salon"`
 }
 
 func LoadSalonDigitalConfig(fp string, conf *SalonDigitalConfig) error {

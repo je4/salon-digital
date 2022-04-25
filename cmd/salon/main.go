@@ -5,10 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"flag"
+	"github.com/blevesearch/bleve/v2"
 	"github.com/je4/PictureFS/v2/pkg/PictureFS"
-	"github.com/je4/salon-digital/v2/pfsEmbed"
+	"github.com/je4/salon-digital/v2/pkg/salon"
 	"github.com/je4/salon-digital/v2/pkg/server"
-	"github.com/je4/salon-digital/v2/web"
 	lm "github.com/je4/utils/v2/pkg/logger"
 	"image"
 	"io"
@@ -29,15 +29,22 @@ func main() {
 	flag.Parse()
 
 	var config = &SalonDigitalConfig{
-		LogFile:       "",
-		LogLevel:      "DEBUG",
-		LogFormat:     `%{time:2006-01-02T15:04:05.000} %{module}::%{shortfunc} [%{shortfile}] > %{level:.5s} - %{message}`,
-		BaseDir:       *basedir,
-		Addr:          "localhost:80",
-		AddrExt:       "http://localhost:80/",
-		User:          "jane",
-		Password:      "doe",
-		ImageTemplate: "web/imagetemplate/Page01.json",
+		LogFile:   "",
+		LogLevel:  "DEBUG",
+		LogFormat: `%{time:2006-01-02T15:04:05.000} %{module}::%{shortfunc} [%{shortfile}] > %{level:.5s} - %{message}`,
+		BaseDir:   *basedir,
+		Addr:      "localhost:80",
+		AddrExt:   "http://localhost:80/",
+		User:      "jane",
+		Password:  "doe",
+		Salon: SalonConfig{
+			TemplateDev:    false,
+			BleveIndex:     "",
+			TemplateDir:    "",
+			StaticDir:      "",
+			PictureFSImage: "",
+			PictureFSJSON:  "",
+		},
 	}
 	if err := LoadSalonDigitalConfig(*configfile, config); err != nil {
 		log.Printf("cannot load config file: %v", err)
@@ -63,20 +70,19 @@ func main() {
 
 	logger.Info("loading PictureFS...")
 	var pfs *PictureFS.FS
-	if config.PictureFSImage != "" {
-		pfs, err = PictureFS.NewFSFile(config.PictureFSImage, config.PictureFSJSON)
+	if config.Salon.PictureFSImage != "" {
+		pfs, err = PictureFS.NewFSFile(config.Salon.PictureFSImage, config.Salon.PictureFSJSON)
 		if err != nil {
-			logger.Panicf("cannot load PictureFS(%s/%s): %v", config.PictureFSImage, config.PictureFSJSON, err)
+			logger.Panicf("cannot load PictureFS(%s/%s): %v", config.Salon.PictureFSImage, config.Salon.PictureFSJSON, err)
 		}
 	} else {
-
-		pfsImage, _, err := image.Decode(bytes.NewBuffer(pfsEmbed.SalonDigitalImage))
+		pfsImage, _, err := image.Decode(bytes.NewBuffer(salon.SalonDigitalImage))
 		if err != nil {
 			logger.Panicf("cannot decode embedded PictureFS: %v", err)
 		}
 
 		var layout = PictureFS.Layout{}
-		if err := json.Unmarshal(pfsEmbed.SalonDigitalJSON, &layout); err != nil {
+		if err := json.Unmarshal(salon.SalonDigitalJSON, &layout); err != nil {
 			logger.Panicf("cannot unmarshal embedded PictureFS: %v", err)
 		}
 		pfs, err = PictureFS.NewFS(pfsImage, layout)
@@ -87,34 +93,38 @@ func main() {
 
 	var staticFS, templateFS fs.FS
 
-	if config.StaticDir == "" {
-		staticFS, err = fs.Sub(web.StaticFS, "static")
+	if config.Salon.StaticDir == "" {
+		staticFS, err = fs.Sub(salon.StaticFS, "static")
 		if err != nil {
 			logger.Panicf("cannot get subtree of static: %v", err)
 		}
 	} else {
-		staticFS = os.DirFS(config.StaticDir)
+		staticFS = os.DirFS(config.Salon.StaticDir)
 	}
 
-	if config.TemplateDir == "" {
-		templateFS, err = fs.Sub(web.TemplateFS, "template")
-		if err != nil {
-			logger.Panicf("cannot get subtree of embedded template: %v", err)
-		}
-	} else {
-		templateFS = os.DirFS(config.TemplateDir)
+	index, err := bleve.Open(config.Salon.BleveIndex)
+	if err != nil {
+		logger.Panicf("cannot load bleve index %s: %v", config.Salon.BleveIndex, err)
+	}
+	defer index.Close()
+
+	salonDigital, err := salon.NewSalon(
+		index,
+		staticFS,
+		templateFS,
+		pfs,
+		logger,
+	)
+	if err != nil {
+		logger.Panicf("cannot create salon: %v", err)
 	}
 
 	srv, err := server.NewServer(
 		"Salon-Digital",
 		config.Addr,
 		config.AddrExt,
-		pfs,
-		staticFS,
-		templateFS,
 		config.User,
 		config.Password,
-		config.TemplateDev,
 		logger,
 		accessLog,
 	)

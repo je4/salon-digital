@@ -1,4 +1,4 @@
-package server
+package salon
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func (s *Server) MoveHandler(w http.ResponseWriter, r *http.Request) {
+func (s *Salon) MoveHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	w.Header().Set("Content-Type", "application/json")
 	var lab = &Labyrinth{}
