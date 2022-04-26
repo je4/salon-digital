@@ -102,6 +102,15 @@ func main() {
 		staticFS = os.DirFS(config.Salon.StaticDir)
 	}
 
+	if config.Salon.TemplateDir == "" {
+		templateFS, err = fs.Sub(salon.TemplateFS, "embed/template")
+		if err != nil {
+			logger.Panicf("cannot get subtree of static: %v", err)
+		}
+	} else {
+		templateFS = os.DirFS(config.Salon.TemplateDir)
+	}
+
 	index, err := bleve.Open(config.Salon.BleveIndex)
 	if err != nil {
 		logger.Panicf("cannot load bleve index %s: %v", config.Salon.BleveIndex, err)
@@ -112,6 +121,7 @@ func main() {
 		index,
 		staticFS,
 		templateFS,
+		config.Salon.TemplateDev,
 		pfs,
 		logger,
 	)
@@ -131,6 +141,8 @@ func main() {
 	if err != nil {
 		logger.Panicf("cannot initialize server: %v", err)
 	}
+	srv.AddSubServer("/salon", salonDigital)
+
 	go func() {
 		if err := srv.ListenAndServe(config.CertPem, config.KeyPem); err != nil {
 			log.Fatalf("server died: %v", err)

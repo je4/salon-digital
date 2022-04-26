@@ -10,10 +10,9 @@ require (
 	github.com/BurntSushi/toml v1.0.0
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/blevesearch/bleve/v2 v2.3.2
-	github.com/dlclark/regexp2 v1.4.0
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
-	github.com/je4/PictureFS/v2 v2.0.0-20220317073613-af6129bfc191
+	github.com/je4/PictureFS/v2 v2.0.0-20220426160452-a0a705971ef3
 	github.com/je4/utils/v2 v2.0.6
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
 	github.com/pkg/errors v0.9.1

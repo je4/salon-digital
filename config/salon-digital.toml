@@ -6,9 +6,9 @@
 #user = "sam"
 #password = "samantha"
 [salon]
-picturefsimage = "./salon/embed/pfsEmbed/salon-digital.png"
-picturefsjson = "./salon/embed/pfsEmbed/salon-digital.json"
-staticdir = "./salon/embed/static"
-templatedir = "./salon/embed/template/template"
+picturefsimage = "./pkg/salon/embed/pfsEmbed/salon-digital.png"
+picturefsjson = "./pkg/salon/embed/pfsEmbed/salon-digital.json"
+staticdir = "./pkg/salon/embed/static"
+templatedir = "./pkg/salon/embed/template"
 templatedev = true
 bleveindex = "c:/temp/bangbang/bangbang.bleve"

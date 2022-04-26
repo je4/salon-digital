@@ -16,7 +16,7 @@ import (
 )
 
 type SubServer interface {
-	SetRoutes(route *mux.Router) error
+	SetRoutes(pathPrefix string, route *mux.Router) error
 }
 
 type Server struct {
@@ -122,8 +122,19 @@ func (s *Server) ListenAndServe(cert, key string) (err error) {
 	*/
 	for path, subServer := range s.subServer {
 		subRouter := router.PathPrefix(path).Subrouter()
-		subServer.SetRoutes(subRouter)
+		subServer.SetRoutes(path, subRouter)
 	}
+	var tss = &TestSubServer{}
+	tss.SetRoutes("/test", router.PathPrefix("/test").Subrouter())
+
+	router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+		pathRegexp, err := route.GetPathRegexp()
+		if err != nil {
+			return errors.Wrapf(err, "cannot get path regexp of route %s", route.GetName())
+		}
+		s.log.Infof("Route %s: %s", route.GetName(), pathRegexp)
+		return nil
+	})
 	loggedRouter := handlers.CombinedLoggingHandler(s.accessLog, handlers.ProxyHeaders(router))
 	addr := net.JoinHostPort(s.host, s.port)
 	s.srv = &http.Server{

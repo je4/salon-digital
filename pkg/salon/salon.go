@@ -9,33 +9,30 @@ import (
 	"html/template"
 	"io/fs"
 	"net/http"
-	"os"
 	"path/filepath"
 )
 
 type Salon struct {
 	index            bleve.Index
-	gridTemplate     *template.Template
+	gridTemplate     map[string]*template.Template
 	templateFS       fs.FS
-	gridTemplateFile string
+	staticFS         fs.FS
 	log              *logging.Logger
 	httpImageServer  http.Handler
+	httpStaticServer http.Handler
+	templageDev      bool
 }
 
-func NewSalon(index bleve.Index, templatePath, gridTemplateFile string, imageFS fs.FS, log *logging.Logger) (*Salon, error) {
-	var templateFS fs.FS
-	if templatePath == "" {
-		templateFS = TemplateFS
-	} else {
-		templateFS = os.DirFS(templatePath)
-	}
+func NewSalon(index bleve.Index, staticFS, templateFS fs.FS, templateDev bool, imageFS fs.FS, log *logging.Logger) (*Salon, error) {
 	s := &Salon{
 		index:            index,
-		gridTemplate:     nil,
+		gridTemplate:     map[string]*template.Template{},
 		templateFS:       templateFS,
-		gridTemplateFile: gridTemplateFile,
+		templageDev:      templateDev,
+		staticFS:         staticFS,
 		log:              log,
 		httpImageServer:  http.FileServer(http.FS(imageFS)),
+		httpStaticServer: http.FileServer(http.FS(staticFS)),
 	}
 	return s, s.initTemplates()
 }
@@ -50,17 +47,24 @@ func (s *Salon) initTemplates() (err error) {
 		}
 		return Items
 	}
-	name := filepath.Base(s.gridTemplateFile)
-	s.gridTemplate, err = template.New(name).Funcs(funcMap).ParseFS(s.templateFS, s.gridTemplateFile)
+	templateFiles, err := findAllFiles(s.templateFS, ".", ".gohtml")
 	if err != nil {
-		return errors.Wrapf(err, "cannot parse template: %s", name)
+		return errors.Wrap(err, "cannot find templates")
+	}
+	for _, templateFile := range templateFiles {
+		name := filepath.Base(templateFile)
+		s.gridTemplate[name], err = template.New(name).Funcs(funcMap).ParseFS(s.templateFS, templateFile)
+		if err != nil {
+			return errors.Wrapf(err, "cannot parse template: %s", templateFile)
+		}
 	}
 	return nil
 }
 
-func (s *Salon) SetRoutes(router *mux.Router) error {
-	router.PathPrefix("/img").Handler(http.StripPrefix("/img", s.httpImageServer)).Methods("GET")
-	router.PathPrefix("/").HandlerFunc(s.MainHandler).Methods("GET")
-	router.HandleFunc("/move/{direction}", s.MoveHandler).Methods("POST")
+func (s *Salon) SetRoutes(pathPrefix string, router *mux.Router) error {
+	router.PathPrefix("/img").Handler(http.StripPrefix(pathPrefix+"/img", s.httpImageServer)).Methods("GET").Name("image server")
+	router.PathPrefix("/static").Handler(http.StripPrefix(pathPrefix+"/static", s.httpStaticServer)).Methods("GET").Name("static server")
+	router.HandleFunc("/", s.MainHandler).Methods("GET").Name("main")
+	router.HandleFunc("/move/{direction}", s.MoveHandler).Methods("POST").Name("move")
 	return nil
 }
