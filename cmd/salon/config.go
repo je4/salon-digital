@@ -14,6 +14,7 @@ type SalonConfig struct {
 	StaticDir      string `toml:"staticdir"`
 	PictureFSImage string `toml:"picturefsimage"`
 	PictureFSJSON  string `toml:"picturefsjson"`
+	ExportPath     string `toml:"exportpath"`
 }
 
 type SalonDigitalConfig struct {

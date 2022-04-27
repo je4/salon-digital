@@ -12,3 +12,4 @@ staticdir = "./pkg/salon/embed/static"
 templatedir = "./pkg/salon/embed/template"
 templatedev = true
 bleveindex = "c:/temp/bangbang/bangbang.bleve"
+exportpath = "c:/temp/bangbang"

@@ -2,7 +2,6 @@ package salon
 
 import (
 	"github.com/Masterminds/sprig"
-	"github.com/blevesearch/bleve/v2"
 	"github.com/gorilla/mux"
 	"github.com/op/go-logging"
 	"github.com/pkg/errors"
@@ -13,22 +12,22 @@ import (
 )
 
 type Salon struct {
-	index            bleve.Index
+	works            map[string]Work
 	gridTemplate     map[string]*template.Template
 	templateFS       fs.FS
 	staticFS         fs.FS
 	log              *logging.Logger
 	httpImageServer  http.Handler
 	httpStaticServer http.Handler
-	templageDev      bool
+	templateDev      bool
 }
 
-func NewSalon(index bleve.Index, staticFS, templateFS fs.FS, templateDev bool, imageFS fs.FS, log *logging.Logger) (*Salon, error) {
+func NewSalon(works map[string]Work, staticFS, templateFS fs.FS, templateDev bool, imageFS fs.FS, log *logging.Logger) (*Salon, error) {
 	s := &Salon{
-		index:            index,
+		works:            works,
 		gridTemplate:     map[string]*template.Template{},
 		templateFS:       templateFS,
-		templageDev:      templateDev,
+		templateDev:      templateDev,
 		staticFS:         staticFS,
 		log:              log,
 		httpImageServer:  http.FileServer(http.FS(imageFS)),

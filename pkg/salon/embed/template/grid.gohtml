@@ -97,7 +97,7 @@
     <!-- div id="gridlabyrinth"></div -->
     {{- range $i, $row := .Lab.Fields}}
         {{- range $j, $col := $row}}
-            <div id="lab_{{$i}}_{{$j}}" class="labcell"><img alt="{{$col}} {{$i}}/{{$j}}" src="./img/labyrinth/{{$col}}.png" class="pixelated"></div>
+            <div id="lab_{{$i}}_{{$j}}" class="labcell"><img alt="{{$col}} {{$i}}/{{$j}}" src="./img/labyrinth/{{$col.Name}}.png" class="pixelated"></div>
         {{- end}}
     {{- end}}
     <div id="gridcontent"></div>
@@ -235,7 +235,7 @@
                     for( j = 0; j < lab.Size; j++ ) {
                         let fld = document.getElementById("lab_"+i+"_"+j);
                         let img = fld.firstChild;
-                        img.src = "./img/labyrinth/"+lab.Fields[i][j]+".png";
+                        img.src = "./img/labyrinth/"+lab.Fields[i][j].Name+".png";
                     }
                 }
             }
