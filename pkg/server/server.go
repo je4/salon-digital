@@ -3,15 +3,16 @@ package server
 import (
 	"context"
 	"crypto/tls"
+	"github.com/goph/emperror"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	dcert "github.com/je4/utils/v2/pkg/cert"
 	"github.com/op/go-logging"
-	"github.com/pkg/errors"
 	"io"
+	"io/fs"
 	"net"
 	"net/http"
-	"strings"
+	"net/url"
 	"time"
 )
 
@@ -28,24 +29,21 @@ type Server struct {
 	jwtKey         string
 	jwtAlg         []string
 	log            *logging.Logger
-	AddrExt        string
+	urlExt         *url.URL
 	accessLog      io.Writer
 	subServer      map[string]SubServer
+	dataFS         fs.FS
 }
 
-func NewServer(service,
-	addr, addrExt string,
-	name, password string,
-	log *logging.Logger,
-	accessLog io.Writer) (*Server, error) {
+func NewServer(service, addr string, urlExt *url.URL, name, password string, dataFS fs.FS, log *logging.Logger, accessLog io.Writer) (*Server, error) {
 	host, port, err := net.SplitHostPort(addr)
 	if err != nil {
-		return nil, errors.Wrapf(err, "cannot split address %s", addr)
+		return nil, emperror.Wrapf(err, "cannot split address %s", addr)
 	}
 	/*
 		extUrl, err := url.Parse(addrExt)
 		if err != nil {
-			return nil, errors.Wrapf(err, "cannot parse external address %s", addrExt)
+			return nil, emperror.Wrapf(err, "cannot parse external address %s", addrExt)
 		}
 	*/
 
@@ -53,7 +51,8 @@ func NewServer(service,
 		service:   service,
 		host:      host,
 		port:      port,
-		AddrExt:   strings.TrimRight(addrExt, "/"),
+		urlExt:    urlExt,
+		dataFS:    dataFS,
 		name:      name,
 		password:  password,
 		log:       log,
@@ -108,7 +107,7 @@ func (s *Server) ListenAndServe(cert, key string) (err error) {
 	/*
 		injectFS, err := fs.Sub(web.InjectFS, "inject")
 		if err != nil {
-			return errors.Wrap(err, "cannot get subtree of embedded inject")
+			return emperror.Wrap(err, "cannot get subtree of embedded inject")
 		}
 		httpInjectServer := http.FileServer(http.FS(injectFS))
 
@@ -120,6 +119,8 @@ func (s *Server) ListenAndServe(cert, key string) (err error) {
 			http.StripPrefix("/", http.HandlerFunc(s.RegexpHandler)),
 		).Methods("GET")
 	*/
+	router.PathPrefix("/data").Handler(http.StripPrefix("/data", http.FileServer(http.FS(s.dataFS)))).Methods("GET").Name("data server")
+
 	for path, subServer := range s.subServer {
 		subRouter := router.PathPrefix(path).Subrouter()
 		subServer.SetRoutes(path, subRouter)
@@ -130,7 +131,7 @@ func (s *Server) ListenAndServe(cert, key string) (err error) {
 	router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 		pathRegexp, err := route.GetPathRegexp()
 		if err != nil {
-			return errors.Wrapf(err, "cannot get path regexp of route %s", route.GetName())
+			return emperror.Wrapf(err, "cannot get path regexp of route %s", route.GetName())
 		}
 		s.log.Infof("Route %s: %s", route.GetName(), pathRegexp)
 		return nil
@@ -146,16 +147,16 @@ func (s *Server) ListenAndServe(cert, key string) (err error) {
 		s.log.Info("generating new certificate")
 		cert, err := dcert.DefaultCertificate()
 		if err != nil {
-			return errors.Wrap(err, "cannot generate default certificate")
+			return emperror.Wrap(err, "cannot generate default certificate")
 		}
 		s.srv.TLSConfig = &tls.Config{Certificates: []tls.Certificate{*cert}}
-		s.log.Infof("starting salon digital at %v - https://%s:%v/", s.AddrExt, s.host, s.port)
+		s.log.Infof("starting salon digital at %v - https://%s:%v/", s.urlExt.String(), s.host, s.port)
 		return s.srv.ListenAndServeTLS("", "")
 	} else if cert != "" && key != "" {
-		s.log.Infof("starting salon digital at %v - https://%s:%v/", s.AddrExt, s.host, s.port)
+		s.log.Infof("starting salon digital at %v - https://%s:%v/", s.urlExt.String(), s.host, s.port)
 		return s.srv.ListenAndServeTLS(cert, key)
 	} else {
-		s.log.Infof("starting salon digital at %v - http://%s:%v/", s.AddrExt, s.host, s.port)
+		s.log.Infof("starting salon digital at %v - http://%s:%v/", s.urlExt.String(), s.host, s.port)
 		return s.srv.ListenAndServe()
 	}
 }

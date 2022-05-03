@@ -18,6 +18,7 @@ func (s *Salon) MoveHandler(w http.ResponseWriter, r *http.Request) {
 		jw.Encode(struct{ error string }{error: fmt.Sprintf("error decoding body: %v", err)})
 		return
 	}
+	lab.initData(s.works)
 	direction := vars["direction"]
 	switch direction {
 	case "east":

@@ -1,7 +1,7 @@
 package salon
 
 import (
-	"github.com/pkg/errors"
+	"github.com/goph/emperror"
 	"io/fs"
 	"path/filepath"
 	"strings"
@@ -10,7 +10,7 @@ import (
 func findAllFiles(fsys fs.FS, dir, suffix string) ([]string, error) {
 	entries, err := fs.ReadDir(fsys, dir)
 	if err != nil {
-		return nil, errors.Wrapf(err, "error reading directory %s", dir)
+		return nil, emperror.Wrapf(err, "error reading directory %s", dir)
 	}
 	var result = []string{}
 	for _, entry := range entries {

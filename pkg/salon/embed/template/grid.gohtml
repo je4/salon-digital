@@ -103,6 +103,7 @@
     <div id="gridcontent"></div>
     <div id="gridmiddleright2"></div>
     <div id="gridlabyrinthsub"></div>
+    <div id="gridcontentsub"></div>
 
     <div id="gridbottomleft"></div>
     <div id="gridbottomcenter" class="center">
@@ -116,7 +117,7 @@
 
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <script>
-    let lab = JSON.parse('{{toPrettyJson .Lab}}');
+    let lab = JSON.parse('{{toJson .Lab}}');
 
     function getDirection(x, y) {
         let bodyStyle = getComputedStyle(document.body);
@@ -164,27 +165,21 @@
                 break;
             default:
         }
-        /*
-        if( x == half && y < half ) {
-            dirStr = "go north";
-            if( !lab.North ) dirStr += " not possible"
-        }
-        if( x == half && y > half ) {
-            dirStr = "go south";
-            if( !lab.South ) dirStr += " not possible"
-        }
-        if( x < half && y == half ) {
-            dirStr = "go west";
-            if( !lab.West ) dirStr += " not possible"
-        }
-        if( x > half && y == half ) {
-            dirStr = "go east";
-            if( !lab.East ) dirStr += " not possible"
-        }
-        */
         if( dirStr != "") dirStr = "go "+dirStr;
         let dirField = document.getElementById("direction")
         dirField.innerText = dirStr;
+    }
+
+    function setWork(work) {
+        let cnt = document.getElementById("gridcontent");
+        let style = cnt.style
+        if(work != null) {
+            style.backgroundImage = "linear-gradient(black, black),url("+work.ThumbnailUrl+")"
+            style.backgroundSize = "cover"
+            style.backgroundBlendMode = "saturation"
+        } else {
+            style.backgroundImage = ""
+        }
     }
 
     function move(x, y) {
@@ -205,20 +200,6 @@
                 break;
             default:
         }
-        /*
-        if( x == half && y < half && lab.North ) {
-            dirStr = "north";
-        }
-        if( x == half && y > half && lab.South ) {
-            dirStr = "south";
-        }
-        if( x < half && y == half && lab.West ) {
-            dirStr = "west";
-        }
-        if( x > half && y == half && lab.East ) {
-            dirStr = "east";
-        }
-        */
         if( dirStr == "" ) return;
         var xhr = new XMLHttpRequest();
         var url = "move/"+dirStr;
@@ -226,6 +207,7 @@
         xhr.setRequestHeader("Content-Type", "application/json");
         xhr.onreadystatechange = function () {
             if (xhr.readyState === 4 && xhr.status === 200) {
+                let middle = ((lab.Size-1)/2);
                 let json = JSON.parse(xhr.responseText);
                 if( json == null ) return;
                 lab = json;
@@ -236,6 +218,9 @@
                         let fld = document.getElementById("lab_"+i+"_"+j);
                         let img = fld.firstChild;
                         img.src = "./img/labyrinth/"+lab.Fields[i][j].Name+".png";
+                        if( i == j && i == middle ) {
+                            setWork(lab.Fields[i][j].Work)
+                        }
                     }
                 }
             }

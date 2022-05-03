@@ -5,57 +5,22 @@ import (
 	"context"
 	"encoding/json"
 	"flag"
-	"fmt"
 	"github.com/blevesearch/bleve/v2"
 	"github.com/je4/PictureFS/v2/pkg/PictureFS"
+	"github.com/je4/salon-digital/v2/pkg/bangbang"
 	"github.com/je4/salon-digital/v2/pkg/salon"
 	"github.com/je4/salon-digital/v2/pkg/server"
 	lm "github.com/je4/utils/v2/pkg/logger"
-	"github.com/je4/zsearch/v2/pkg/search"
-	"github.com/pkg/errors"
 	"image"
 	"io"
 	"io/fs"
 	"log"
+	"net/url"
 	"os"
 	"os/signal"
-	"path/filepath"
-	"regexp"
-	"sort"
-	"strconv"
-	"strings"
 	"syscall"
 	"time"
 )
-
-var mediaserverRegexp = regexp.MustCompile("^mediaserver:([^/]+)/([^/]+)/(.+)$")
-
-func mediaUrl(exportPath, folder, extension, mediaserverUrl string) (string, error) {
-	matches := mediaserverRegexp.FindStringSubmatch(mediaserverUrl)
-	if matches == nil {
-		return "", errors.New(fmt.Sprintf("invalid url: %s", mediaserverUrl))
-	}
-	collection := matches[1]
-	signature := matches[2]
-	function := matches[3]
-
-	functions := strings.Split(strings.ToLower(function), "/")
-	cmd := functions[0]
-	functions = functions[1:]
-	sort.Strings(functions)
-	functions = append([]string{cmd}, functions...)
-	function = strings.Join(functions, "/")
-	filename := strings.ToLower(fmt.Sprintf("%s_%s_%s.%s",
-		collection,
-		strings.ReplaceAll(signature, "$", "-"),
-		strings.ReplaceAll(function, "/", "_"),
-		strings.TrimPrefix(extension, ".")))
-	if len(filename) > 203 {
-		filename = fmt.Sprintf("%s-_-%s", filename[:100], filename[len(filename)-100:])
-	}
-	fullpath := filepath.Join(exportPath, folder, filename)
-	return fullpath, nil
-}
 
 func main() {
 	var err error
@@ -66,17 +31,17 @@ func main() {
 	flag.Parse()
 
 	var config = &SalonDigitalConfig{
-		LogFile:   "",
-		LogLevel:  "DEBUG",
-		LogFormat: `%{time:2006-01-02T15:04:05.000} %{module}::%{shortfunc} [%{shortfile}] > %{level:.5s} - %{message}`,
-		BaseDir:   *basedir,
-		Addr:      "localhost:80",
-		AddrExt:   "http://localhost:80/",
-		User:      "jane",
-		Password:  "doe",
+		LogFile:    "",
+		LogLevel:   "DEBUG",
+		LogFormat:  `%{time:2006-01-02T15:04:05.000} %{module}::%{shortfunc} [%{shortfile}] > %{level:.5s} - %{message}`,
+		BaseDir:    *basedir,
+		Addr:       "localhost:80",
+		AddrExt:    "http://localhost:80/",
+		User:       "jane",
+		Password:   "doe",
+		BleveIndex: "",
 		Salon: SalonConfig{
 			TemplateDev:    false,
-			BleveIndex:     "",
 			TemplateDir:    "",
 			StaticDir:      "",
 			PictureFSImage: "",
@@ -104,6 +69,12 @@ func main() {
 		defer f.Close()
 		accessLog = f
 	}
+
+	urlExt, err := url.Parse(config.AddrExt)
+	if err != nil {
+		logger.Panicf("invalid addrext %s: %v", config.AddrExt, err)
+	}
+
 	var staticFS, templateFS fs.FS
 
 	if config.Salon.StaticDir == "" {
@@ -124,59 +95,23 @@ func main() {
 		templateFS = os.DirFS(config.Salon.TemplateDir)
 	}
 
-	index, err := bleve.Open(config.Salon.BleveIndex)
+	index, err := bleve.Open(config.BleveIndex)
 	if err != nil {
-		logger.Panicf("cannot load bleve index %s: %v", config.Salon.BleveIndex, err)
+		logger.Panicf("cannot load bleve index %s: %v", config.BleveIndex, err)
 	}
 	defer index.Close()
 
-	bQuery := bleve.NewMatchAllQuery()
-	bSearch := bleve.NewSearchRequest(bQuery)
-	searchResult, err := index.Search(bSearch)
+	dataUrl, err := urlExt.Parse("data/")
 	if err != nil {
-		logger.Panicf("cannot load works from index: %v", err)
+		logger.Panicf("cannot parse url %s -> %s: %v", urlExt.String(), "data", err)
 	}
-	var signatures = map[string]salon.Work{}
-	for _, val := range searchResult.Hits {
-		raw, err := index.GetInternal([]byte(val.ID))
-		if err != nil {
-			logger.Panicf("cannot get document #%s from index: %v", val.ID, err)
-		}
-		var src = &search.SourceData{}
-		if err := json.Unmarshal(raw, src); err != nil {
-			logger.Panicf("cannot unmarshal document #%s: %v", val.ID, err)
-		}
-		//logger.Info(string(raw))
-		poster := src.GetPoster()
-		workid, err := strconv.ParseInt(src.GetSignatureOriginal(), 10, 64)
-		if err != nil {
-			logger.Panicf("cannot convert original id %s of %f to int: %v", src.GetSignatureOriginal(), src.GetSignature(), err)
-		}
-		imagePath, err := mediaUrl(
-			config.Salon.ExportPath,
-			fmt.Sprintf("werke/%d/derivate", workid),
-			"jpg",
-			poster.Uri+"/resize/size1024x768/formatjpeg")
-		thumbPath, err := mediaUrl(
-			config.Salon.ExportPath,
-			fmt.Sprintf("werke/%d/derivate", workid),
-			"jpg",
-			poster.Uri+"/resize/size240x240/formatjpeg")
-		if err != nil {
-			logger.Panicf("cannot create path for %s: %v", poster.Uri, err)
-		}
-
-		var work = salon.Work{
-			Signature:    val.ID,
-			Title:        src.Title,
-			Year:         src.GetDate(),
-			Authors:      []string{},
-			Description:  src.GetAbstract(),
-			ImageUrl:     "file://" + filepath.ToSlash(imagePath),
-			ThumbnailUrl: "file://" + filepath.ToSlash(thumbPath),
-			IFrameUrl:    fmt.Sprintf("%s/document/%s", config.AddrExt, val.ID),
-		}
-		signatures[val.ID] = work
+	bb, err := bangbang.NewBangBang(index, urlExt, dataUrl, logger)
+	if err != nil {
+		logger.Panicf("cannot instantiate bangbang: %v", err)
+	}
+	works, err := bb.GetWorks()
+	if err != nil {
+		logger.Panicf("cannot get signature data: %v", err)
 	}
 
 	logger.Info("loading PictureFS...")
@@ -203,7 +138,7 @@ func main() {
 	}
 
 	salonDigital, err := salon.NewSalon(
-		signatures,
+		works,
 		staticFS,
 		templateFS,
 		config.Salon.TemplateDev,
@@ -214,12 +149,15 @@ func main() {
 		logger.Panicf("cannot create salon: %v", err)
 	}
 
+	dataFS := os.DirFS(config.DataDir)
+
 	srv, err := server.NewServer(
 		"Salon-Digital",
 		config.Addr,
-		config.AddrExt,
+		urlExt,
 		config.User,
 		config.Password,
+		dataFS,
 		logger,
 		accessLog,
 	)

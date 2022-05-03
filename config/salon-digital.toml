@@ -5,11 +5,11 @@
 #addrext = "https://localhost/"
 #user = "sam"
 #password = "samantha"
+datadir = "c:/temp/bangbang"
+bleveindex = "c:/temp/bangbang/bangbang.bleve"
 [salon]
 picturefsimage = "./pkg/salon/embed/pfsEmbed/salon-digital.png"
 picturefsjson = "./pkg/salon/embed/pfsEmbed/salon-digital.json"
 staticdir = "./pkg/salon/embed/static"
 templatedir = "./pkg/salon/embed/template"
 templatedev = true
-bleveindex = "c:/temp/bangbang/bangbang.bleve"
-exportpath = "c:/temp/bangbang"

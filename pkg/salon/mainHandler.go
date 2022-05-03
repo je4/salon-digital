@@ -17,7 +17,7 @@ func (s *Salon) MainHandler(w http.ResponseWriter, r *http.Request) {
 	for key, _ := range s.works {
 		signatures = append(signatures, key)
 	}
-	lab := NewLabyrinth(7, signatures)
+	lab := NewLabyrinth(7, s.works)
 
 	tpl, ok := s.gridTemplate["grid.gohtml"]
 	if !ok {

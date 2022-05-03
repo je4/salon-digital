@@ -34,7 +34,8 @@ var Field = map[string]int{
 }
 
 type FieldEntry struct {
-	Name, Signature string
+	Name string
+	Work *Work
 }
 
 type Labyrinth struct {
@@ -42,18 +43,26 @@ type Labyrinth struct {
 	Detail                   string
 	Size                     int
 	North, East, South, West bool
-	Signatures               []string
+	works                    map[string]*Work
+	signatures               []string
 }
 
-func NewLabyrinth(size int, signatures []string) *Labyrinth {
+func NewLabyrinth(size int, works map[string]*Work) *Labyrinth {
 	lab := &Labyrinth{
-		Size:       size,
-		Signatures: signatures,
+		Size: size,
 	}
+	lab.initData(works)
 	lab.init()
 	return lab
 }
 
+func (lab *Labyrinth) initData(works map[string]*Work) {
+	lab.works = works
+	lab.signatures = []string{}
+	for sig, _ := range lab.works {
+		lab.signatures = append(lab.signatures, sig)
+	}
+}
 func (lab *Labyrinth) init() {
 	lab.Fields = [][]FieldEntry{}
 	for i := 0; i < lab.Size; i++ {
@@ -78,30 +87,16 @@ func (lab *Labyrinth) getField(connect, noconnect int) FieldEntry {
 		return FieldEntry{}
 	}
 	fe := FieldEntry{
-		Name:      list[rand.Intn(len(list))],
-		Signature: "",
+		Name: list[rand.Intn(len(list))],
+		Work: nil,
 	}
 	if fe.Name == "full" {
-		fe.Signature = lab.Signatures[rand.Intn(len(lab.Signatures))]
+		fe.Work = lab.works[lab.signatures[rand.Intn(len(lab.signatures))]]
 	}
 	return fe
 }
 
 func (lab *Labyrinth) getConnections(i, j int) (connect, noconnect int) {
-	/*
-		if i == 0 {
-			noconnect |= LABLeft
-		}
-		if i == lab.Size {
-			noconnect |= LABRight
-		}
-		if j == 0 {
-			noconnect |= LABTop
-		}
-		if j == lab.Size {
-			noconnect |= LABDown
-		}
-	*/
 	// top
 	if i > 0 {
 		if lab.Fields[i-1][j].Name != "" {
