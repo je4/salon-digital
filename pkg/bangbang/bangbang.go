@@ -118,6 +118,18 @@ func (bb *BangBang) GetWorks() (map[string]*salon.Work, error) {
 			ThumbnailUrl: thumbUrl.String(),
 			IFrameUrl:    iframeUrl.String(),
 		}
+		for _, p := range src.GetPersons() {
+			found := false
+			for _, a := range work.Authors {
+				if a == p.Name {
+					found = true
+					break
+				}
+			}
+			if !found {
+				work.Authors = append(work.Authors, p.Name)
+			}
+		}
 		signatures[val.ID] = work
 
 	}

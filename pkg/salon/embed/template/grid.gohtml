@@ -74,6 +74,7 @@
     </style>
 </head>
 <body>
+<div>
 <div id="sdmlwrapper">
     <div id="gridtopleft" class="center"><img class="pixelated" src="./img/old-list/tent.png"></div>
     <div id="gridtopcenter" class="center">
@@ -100,7 +101,16 @@
             <div id="lab_{{$i}}_{{$j}}" class="labcell"><img alt="{{$col}} {{$i}}/{{$j}}" src="./img/labyrinth/{{$col.Name}}.png" class="pixelated"></div>
         {{- end}}
     {{- end}}
-    <div id="gridcontent"></div>
+    <div id="gridcontent">
+        <div id="gridcontenttext">
+            <span id="gridcontenttitle" style="font-weight: bold;"></span><br />
+            &nbsp;<br />
+            <span id="gridcontentauthors"></span><br />
+            &nbsp;<br />
+            <span id="gridcontentdescription"></span>
+        </div>
+        <img id="gridcontentimage">
+    </div>
     <div id="gridmiddleright2"></div>
     <div id="gridlabyrinthsub"></div>
     <div id="gridcontentsub"></div>
@@ -114,10 +124,35 @@
     </div>
     <div id="gridbottomright"></div>
 </div>
+</div>
+
+<div id="detail" class="modal">
+    <div id="detailcontent">
+        <iframe id="detailiframe" src="" allowfullscreen ></iframe>
+    </div>
+
+</div>
 
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <script>
     let lab = JSON.parse('{{toJson .Lab}}');
+    let workActive = false
+
+    var detail = document.getElementById("detail")
+    var detailiframe = document.getElementById("detailiframe")
+    var btn = document.getElementById("gridcontenttext");
+    btn.onclick = function() {
+        if(workActive) {
+            detailiframe.src = detailiframe.dataset.iframe
+            detail.style.display = "block";
+            detail.style.transition = "all 2s ease-in-out";
+            detail.style.height = "100%";
+        }
+    }
+    detail.onclick = function () {
+        detail.style.display = "none";
+        detail.style.height = "0"
+    }
 
     function getDirection(x, y) {
         let bodyStyle = getComputedStyle(document.body);
@@ -171,14 +206,29 @@
     }
 
     function setWork(work) {
-        let cnt = document.getElementById("gridcontent");
-        let style = cnt.style
+        let img = document.getElementById("gridcontentimage");
+        let cnt = document.getElementById("gridcontenttext");
+        let detailiframe = document.getElementById("detailiframe")
         if(work != null) {
-            style.backgroundImage = "linear-gradient(black, black),url("+work.ThumbnailUrl+")"
-            style.backgroundSize = "cover"
-            style.backgroundBlendMode = "saturation"
+            cnt.style.visibility = "visible";
+            img.src = work.ThumbnailUrl;
+            let title = document.getElementById("gridcontenttitle");
+            if( work.Year != "" ) {
+                title.innerText = work.Title + " (" + work.Year + ")";
+            } else {
+                title.innerText = work.Title;
+            }
+            let authors = document.getElementById("gridcontentauthors");
+            authors.innerText = work.Authors.join("; ")
+            let description = document.getElementById("gridcontentdescription");
+            description.innerText = work.Description;
+            workActive = true;
+            detailiframe.dataset.iframe = work.IFrameUrl;
         } else {
-            style.backgroundImage = ""
+            img.src = "";
+            cnt.style.visibility = "hidden";
+            workActive = false;
+            detailiframe.dataset.iframe = "";
         }
     }
 
