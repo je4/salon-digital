@@ -75,7 +75,7 @@ func main() {
 		logger.Panicf("invalid addrext %s: %v", config.AddrExt, err)
 	}
 
-	var staticFS, templateFS fs.FS
+	var staticFS, salonTemplateFS, bangTemplateFS fs.FS
 
 	if config.Salon.StaticDir == "" {
 		staticFS, err = fs.Sub(salon.StaticFS, "static")
@@ -87,12 +87,12 @@ func main() {
 	}
 
 	if config.Salon.TemplateDir == "" {
-		templateFS, err = fs.Sub(salon.TemplateFS, "embed/template")
+		salonTemplateFS, err = fs.Sub(salon.TemplateFS, "embed/template")
 		if err != nil {
 			logger.Panicf("cannot get subtree of static: %v", err)
 		}
 	} else {
-		templateFS = os.DirFS(config.Salon.TemplateDir)
+		salonTemplateFS = os.DirFS(config.Salon.TemplateDir)
 	}
 
 	index, err := bleve.Open(config.BleveIndex)
@@ -101,15 +101,24 @@ func main() {
 	}
 	defer index.Close()
 
+	if config.Bang.TemplateDir == "" {
+		bangTemplateFS, err = fs.Sub(bangbang.TemplateFS, "embed/template")
+		if err != nil {
+			logger.Panicf("cannot get subtree of static: %v", err)
+		}
+	} else {
+		bangTemplateFS = os.DirFS(config.Bang.TemplateDir)
+	}
+
 	dataUrl, err := urlExt.Parse("data/")
 	if err != nil {
 		logger.Panicf("cannot parse url %s -> %s: %v", urlExt.String(), "data", err)
 	}
-	bb, err := bangbang.NewBangBang(index, urlExt, dataUrl, logger)
+	bb, err := bangbang.NewBangBang(index, urlExt, dataUrl, bangTemplateFS, logger, config.Bang.TemplateDev)
 	if err != nil {
 		logger.Panicf("cannot instantiate bangbang: %v", err)
 	}
-	works, err := bb.GetWorks()
+	works, err := bb.GetWorksSalon()
 	if err != nil {
 		logger.Panicf("cannot get signature data: %v", err)
 	}
@@ -140,7 +149,7 @@ func main() {
 	salonDigital, err := salon.NewSalon(
 		works,
 		staticFS,
-		templateFS,
+		salonTemplateFS,
 		config.Salon.TemplateDev,
 		pfs,
 		logger,
@@ -165,6 +174,8 @@ func main() {
 		logger.Panicf("cannot initialize server: %v", err)
 	}
 	srv.AddSubServer("/salon", salonDigital)
+	bbd := &bangbang.BBDocs{BangBang: bb}
+	srv.AddSubServer("/document", bbd)
 
 	go func() {
 		if err := srv.ListenAndServe(config.CertPem, config.KeyPem); err != nil {

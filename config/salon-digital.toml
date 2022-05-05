@@ -13,3 +13,6 @@ picturefsjson = "./pkg/salon/embed/pfsEmbed/salon-digital.json"
 staticdir = "./pkg/salon/embed/static"
 templatedir = "./pkg/salon/embed/template"
 templatedev = true
+[bang]
+templatedir = "./pkg/bangbang/embed/template"
+templatedev = true

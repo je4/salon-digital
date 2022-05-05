@@ -15,6 +15,11 @@ type SalonConfig struct {
 	PictureFSJSON  string `toml:"picturefsjson"`
 }
 
+type BangConfig struct {
+	TemplateDev bool
+	TemplateDir string
+}
+
 type SalonDigitalConfig struct {
 	CertPem    string      `toml:"certpem"`
 	KeyPem     string      `toml:"keypem"`
@@ -30,6 +35,7 @@ type SalonDigitalConfig struct {
 	User       string      `toml:"user"`
 	Password   string      `toml:"password"`
 	Salon      SalonConfig `toml:"salon"`
+	Bang       BangConfig
 }
 
 func LoadSalonDigitalConfig(fp string, conf *SalonDigitalConfig) error {

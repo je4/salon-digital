@@ -4,11 +4,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/Masterminds/sprig"
 	"github.com/blevesearch/bleve/v2"
 	"github.com/goph/emperror"
+	"github.com/gorilla/mux"
 	"github.com/je4/salon-digital/v2/pkg/salon"
 	"github.com/je4/zsearch/v2/pkg/search"
 	"github.com/op/go-logging"
+	"html/template"
+	"io/fs"
+	"net/http"
 	"net/url"
 	"path/filepath"
 	"regexp"
@@ -18,20 +23,49 @@ import (
 )
 
 type BangBang struct {
-	index   bleve.Index
-	urlExt  *url.URL
-	dataUrl *url.URL
-	logger  *logging.Logger
+	index      bleve.Index
+	urlExt     *url.URL
+	dataUrl    *url.URL
+	logger     *logging.Logger
+	dev        bool
+	templates  map[string]*template.Template
+	templateFS fs.FS
 }
 
-func NewBangBang(index bleve.Index, urlExt *url.URL, dataUrl *url.URL, logger *logging.Logger) (*BangBang, error) {
+func NewBangBang(index bleve.Index, urlExt *url.URL, dataUrl *url.URL, templateFS fs.FS, logger *logging.Logger, dev bool) (*BangBang, error) {
 	b := &BangBang{
-		index:   index,
-		urlExt:  urlExt,
-		dataUrl: dataUrl,
-		logger:  logger,
+		index:      index,
+		urlExt:     urlExt,
+		dataUrl:    dataUrl,
+		logger:     logger,
+		dev:        dev,
+		templateFS: templateFS,
+		templates:  map[string]*template.Template{},
 	}
-	return b, nil
+	return b, b.initTemplates()
+}
+
+func findAllFiles(fsys fs.FS, dir, suffix string) ([]string, error) {
+	entries, err := fs.ReadDir(fsys, dir)
+	if err != nil {
+		return nil, emperror.Wrapf(err, "error reading directory %s", dir)
+	}
+	var result = []string{}
+	for _, entry := range entries {
+		name := filepath.ToSlash(filepath.Join(dir, entry.Name()))
+		if entry.IsDir() {
+			entries2, err := findAllFiles(fsys, name, suffix)
+			if err != nil {
+				return nil, err
+			}
+			result = append(result, entries2...)
+		} else {
+			if strings.HasSuffix(entry.Name(), suffix) {
+				result = append(result, name)
+			}
+		}
+	}
+	return result, nil
 }
 
 var mediaserverRegexp = regexp.MustCompile("^mediaserver:([^/]+)/([^/]+)/(.+)$")
@@ -62,8 +96,70 @@ func mediaUrl(extension, mediaserverUrl string) (string, error) {
 	fullpath := filepath.Join(filename)
 	return fullpath, nil
 }
+func (bb *BangBang) initTemplates() error {
+	funcMap := sprig.FuncMap()
+	funcMap["iterate"] = func(count int) []int {
+		var i int
+		var Items []int
+		for i = 0; i < count; i++ {
+			Items = append(Items, i)
+		}
+		return Items
+	}
+	funcMap["mediaUrl"] = func(mediaUri, path, ext string) string {
+		filename, err := mediaUrl(ext, mediaUri)
+		if err != nil {
+			bb.logger.Errorf("invalid media url %s: %v", mediaUri, err)
+			return ""
+		}
+		path = strings.TrimRight(path, "/") + "/"
+		u, err := url.Parse(path)
+		if err != nil {
+			bb.logger.Errorf("invalid url %s: %b", path, err)
+			return ""
+		}
+		newUrl, err := u.Parse(filename)
+		if err != nil {
+			bb.logger.Errorf("invalid url %s: %b", path, err)
+			return ""
+		}
+		return newUrl.String()
+	}
+	funcMap["correctWeb"] = func(u string) string {
+		if strings.HasPrefix(strings.ToLower(u), "http") {
+			return u
+		}
+		return "https://" + u
+	}
 
-func (bb *BangBang) GetWorks() (map[string]*salon.Work, error) {
+	templateFiles, err := findAllFiles(bb.templateFS, ".", ".gohtml")
+	if err != nil {
+		return emperror.Wrap(err, "cannot find templates")
+	}
+	for _, templateFile := range templateFiles {
+		name := filepath.Base(templateFile)
+		bb.templates[name], err = template.New(name).Funcs(funcMap).ParseFS(bb.templateFS, templateFile)
+		if err != nil {
+			return emperror.Wrapf(err, "cannot parse template: %s", templateFile)
+		}
+	}
+	return nil
+
+}
+
+func (bb *BangBang) GetWork(signature string) (*search.SourceData, error) {
+	raw, err := bb.index.GetInternal([]byte(signature))
+	if err != nil {
+		return nil, emperror.Wrapf(err, "cannot get document #%s from index", signature)
+	}
+	var src = &search.SourceData{}
+	if err := json.Unmarshal(raw, src); err != nil {
+		return nil, emperror.Wrapf(err, "cannot unmarshal document #%s", signature)
+	}
+	return src, nil
+}
+
+func (bb *BangBang) GetWorksSalon() (map[string]*salon.Work, error) {
 	bQuery := bleve.NewMatchAllQuery()
 	bSearch := bleve.NewSearchRequest(bQuery)
 	searchResult, err := bb.index.Search(bSearch)
@@ -72,15 +168,10 @@ func (bb *BangBang) GetWorks() (map[string]*salon.Work, error) {
 	}
 	var signatures = map[string]*salon.Work{}
 	for _, val := range searchResult.Hits {
-		raw, err := bb.index.GetInternal([]byte(val.ID))
+		src, err := bb.GetWork(val.ID)
 		if err != nil {
 			return nil, emperror.Wrapf(err, "cannot get document #%s from index", val.ID)
 		}
-		var src = &search.SourceData{}
-		if err := json.Unmarshal(raw, src); err != nil {
-			return nil, emperror.Wrapf(err, "cannot unmarshal document #%s", val.ID)
-		}
-		//logger.Info(string(raw))
 		poster := src.GetPoster()
 		workid, err := strconv.ParseInt(src.GetSignatureOriginal(), 10, 64)
 		if err != nil {
@@ -134,4 +225,39 @@ func (bb *BangBang) GetWorks() (map[string]*salon.Work, error) {
 
 	}
 	return signatures, nil
+}
+
+func (bb *BangBang) DocumentHandler(w http.ResponseWriter, r *http.Request) {
+	if bb.dev {
+		bb.initTemplates()
+	}
+	vars := mux.Vars(r)
+	signature, ok := vars["signature"]
+	if !ok {
+		http.Error(w, "no signature in url", http.StatusNotFound)
+		return
+	}
+	src, err := bb.GetWork(signature)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("cannot get work #%s", signature), http.StatusNotFound)
+		return
+	}
+
+	tpl, ok := bb.templates["document.gohtml"]
+	if !ok {
+		http.Error(w, "cannot find document.gohtml", http.StatusInternalServerError)
+		return
+	}
+	data := struct {
+		Item    *search.SourceData
+		DataDir string
+	}{
+		Item:    src,
+		DataDir: bb.dataUrl.String(),
+	}
+	if err := tpl.Execute(w, data); err != nil {
+		bb.logger.Errorf("cannot execute template: %v", err)
+		http.Error(w, fmt.Sprintf("cannot execute template: %v", err), http.StatusInternalServerError)
+		return
+	}
 }
