@@ -2,5 +2,5 @@ package bangbang
 
 import "embed"
 
-//go:embed embed/template/document.gohtml
+//go:embed embed/template/*
 var TemplateFS embed.FS

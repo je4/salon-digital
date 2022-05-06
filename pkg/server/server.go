@@ -2,6 +2,8 @@ package server
 
 import (
 	"context"
+	"crypto/sha256"
+	"crypto/subtle"
 	"crypto/tls"
 	"github.com/goph/emperror"
 	"github.com/gorilla/handlers"
@@ -63,62 +65,61 @@ func NewServer(service, addr string, urlExt *url.URL, name, password string, dat
 	return srv, nil
 }
 
+var expectedUsernameHash = sha256.Sum256([]byte("bangbang"))
+var expectedPasswordHash = sha256.Sum256([]byte("2022"))
+
+//func basicAuth(next http.HandlerFunc) http.HandlerFunc {
+func basicAuth(h http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		// https://www.alexedwards.net/blog/basic-authentication-in-go
+		// License: MIT
+		// Extract the username and password from the request
+		// Authorization header. If no Authentication header is present
+		// or the header value is invalid, then the 'ok' return value
+		// will be false.
+		username, password, ok := r.BasicAuth()
+		if ok {
+			// Calculate SHA-256 hashes for the provided and expected
+			// usernames and passwords.
+			usernameHash := sha256.Sum256([]byte(username))
+			passwordHash := sha256.Sum256([]byte(password))
+
+			// Use the subtle.ConstantTimeCompare() function to check if
+			// the provided username and password hashes equal the
+			// expected username and password hashes. ConstantTimeCompare
+			// will return 1 if the values are equal, or 0 otherwise.
+			// Importantly, we should to do the work to evaluate both the
+			// username and password before checking the return values to
+			// avoid leaking information.
+			usernameMatch := subtle.ConstantTimeCompare(usernameHash[:], expectedUsernameHash[:]) == 1
+			passwordMatch := subtle.ConstantTimeCompare(passwordHash[:], expectedPasswordHash[:]) == 1
+
+			// If the username and password are correct, then call
+			// the next handler in the chain. Make sure to return
+			// afterwards, so that none of the code below is run.
+			if usernameMatch && passwordMatch {
+				h.ServeHTTP(w, r)
+				return
+			}
+		}
+
+		// If the Authentication header is not present, is invalid, or the
+		// username or password is wrong, then set a WWW-Authenticate
+		// header to inform the client that we expect them to use basic
+		// authentication and send a 401 Unauthorized response.
+		w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+	}
+	return http.HandlerFunc(fn)
+}
+
 func (s *Server) AddSubServer(path string, subServer SubServer) {
 	s.subServer[path] = subServer
 }
 
-/*
-func (s *Server) MainHandler(w http.ResponseWriter, r *http.Request) {
-	if s.templateDev {
-		if err := s.InitTemplates(); err != nil {
-			s.log.Errorf("error initializing templates: %v", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(fmt.Sprintf("%v", err)))
-			return
-		}
-	}
-	url := r.URL
-	if url.Path == "/" {
-		bQuery := bleve.NewMatchAllQuery()
-		bSearch := bleve.NewSearchRequest(bQuery)
-		searchResult, err := s.index.Search(bSearch)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(fmt.Sprintf("%v", err)))
-			return
-		}
-		var signatures = []string{}
-		for _, val := range searchResult.Hits {
-			signatures = append(signatures, val.ID)
-		}
-		lab := salon.NewLabyrinth(7, signatures)
-
-		if err := s.templates["grid.gohtml"].Execute(w, struct{ Lab *salon.Labyrinth }{Lab: lab}); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(fmt.Sprintf("%v", err)))
-			return
-		}
-	}
-}
-
-*/
 func (s *Server) ListenAndServe(cert, key string) (err error) {
 	router := mux.NewRouter()
-	/*
-		injectFS, err := fs.Sub(web.InjectFS, "inject")
-		if err != nil {
-			return emperror.Wrap(err, "cannot get subtree of embedded inject")
-		}
-		httpInjectServer := http.FileServer(http.FS(injectFS))
 
-		router.PathPrefix("/inject").Handler(
-			http.StripPrefix("/inject", httpInjectServer),
-		).Methods("GET")
-
-		router.PathPrefix("/").Handler(
-			http.StripPrefix("/", http.HandlerFunc(s.RegexpHandler)),
-		).Methods("GET")
-	*/
 	router.PathPrefix("/data").Handler(http.StripPrefix("/data", http.FileServer(http.FS(s.dataFS)))).Methods("GET").Name("data server")
 
 	for path, subServer := range s.subServer {
@@ -136,7 +137,7 @@ func (s *Server) ListenAndServe(cert, key string) (err error) {
 		s.log.Infof("Route %s: %s", route.GetName(), pathRegexp)
 		return nil
 	})
-	loggedRouter := handlers.CombinedLoggingHandler(s.accessLog, handlers.ProxyHeaders(router))
+	loggedRouter := handlers.CombinedLoggingHandler(s.accessLog, handlers.ProxyHeaders(basicAuth(router)))
 	addr := net.JoinHostPort(s.host, s.port)
 	s.srv = &http.Server{
 		Handler: loggedRouter,

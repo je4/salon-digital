@@ -26,7 +26,7 @@ func main() {
 	var err error
 
 	var basedir = flag.String("basedir", ".", "base folder with html contents")
-	var configfile = flag.String("cfg", "/etc/tbbs.toml", "configuration file")
+	var configfile = flag.String("cfg", "/etc/salon-digital.toml", "configuration file")
 
 	flag.Parse()
 
@@ -123,6 +123,8 @@ func main() {
 		logger.Panicf("cannot get signature data: %v", err)
 	}
 
+	logger.Infof("%v works loaded", len(works))
+
 	logger.Info("loading PictureFS...")
 	var pfs *PictureFS.FS
 	if config.Salon.PictureFSImage != "" {
@@ -176,6 +178,8 @@ func main() {
 	srv.AddSubServer("/salon", salonDigital)
 	bbd := &bangbang.BBDocs{BangBang: bb}
 	srv.AddSubServer("/document", bbd)
+	bbg := &bangbang.BBGrid{BangBang: bb}
+	srv.AddSubServer("/grid", bbg)
 
 	go func() {
 		if err := srv.ListenAndServe(config.CertPem, config.KeyPem); err != nil {

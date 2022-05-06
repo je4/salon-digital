@@ -159,56 +159,80 @@ func (bb *BangBang) GetWork(signature string) (*search.SourceData, error) {
 	return src, nil
 }
 
-func (bb *BangBang) GetWorksSalon() (map[string]*salon.Work, error) {
+func (bb *BangBang) GetWorks() ([]*search.SourceData, error) {
 	bQuery := bleve.NewMatchAllQuery()
 	bSearch := bleve.NewSearchRequest(bQuery)
-	searchResult, err := bb.index.Search(bSearch)
+	var works = []*search.SourceData{}
+	bSearch.Size = 100
+	for {
+		searchResult, err := bb.index.Search(bSearch)
+		if err != nil {
+			return nil, emperror.Wrap(err, "cannot load works from index")
+		}
+		for _, val := range searchResult.Hits {
+			src, err := bb.GetWork(val.ID)
+			if err != nil {
+				return nil, emperror.Wrapf(err, "cannot get document #%s from index", val.ID)
+			}
+			works = append(works, src)
+		}
+		if len(searchResult.Hits) < 100 {
+			break
+		}
+		bSearch.From += 100
+	}
+	return works, nil
+}
+func (bb *BangBang) GetWorksSalon() (map[string]*salon.Work, error) {
+	signatures := map[string]*salon.Work{}
+	works, err := bb.GetWorks()
 	if err != nil {
 		return nil, emperror.Wrap(err, "cannot load works from index")
 	}
-	var signatures = map[string]*salon.Work{}
-	for _, val := range searchResult.Hits {
-		src, err := bb.GetWork(val.ID)
+	for _, src := range works {
+		src, err := bb.GetWork(src.Signature)
 		if err != nil {
-			return nil, emperror.Wrapf(err, "cannot get document #%s from index", val.ID)
+			return nil, emperror.Wrapf(err, "cannot get document #%s from index", src.Signature)
 		}
 		poster := src.GetPoster()
 		workid, err := strconv.ParseInt(src.GetSignatureOriginal(), 10, 64)
 		if err != nil {
 			return nil, emperror.Wrapf(err, "cannot convert original id %s of %f to int", src.GetSignatureOriginal(), src.GetSignature())
 		}
-		imagePath, err := mediaUrl(
-			"jpg",
-			poster.Uri+"/resize/size1024x768/formatjpeg")
-		thumbPath, err := mediaUrl(
-			"jpg",
-			poster.Uri+"/resize/size240x240/formatjpeg")
-		if err != nil {
-			return nil, emperror.Wrapf(err, "cannot create path for %s", poster.Uri)
-		}
-
-		imageUrl, err := bb.dataUrl.Parse(fmt.Sprintf("werke/%d/derivate/%s", workid, imagePath))
-		if err != nil {
-			return nil, emperror.Wrapf(err, "cannot parse url %s -> %s", bb.urlExt.String(), imagePath)
-		}
-		thumbUrl, err := bb.dataUrl.Parse(fmt.Sprintf("werke/%d/derivate/%s", workid, thumbPath))
-		if err != nil {
-			return nil, emperror.Wrapf(err, "cannot parse url %s -> %s", bb.urlExt.String(), imagePath)
-		}
-		iframeUrl, err := bb.urlExt.Parse(fmt.Sprintf("document/%s", val.ID))
-		if err != nil {
-			return nil, emperror.Wrapf(err, "cannot parse url %s -> %s", bb.urlExt.String(), imagePath)
-		}
 		var work = &salon.Work{
-			Signature:    val.ID,
-			Title:        src.Title,
-			Year:         src.GetDate(),
-			Authors:      []string{},
-			Description:  src.GetAbstract(),
-			ImageUrl:     imageUrl.String(),
-			ThumbnailUrl: thumbUrl.String(),
-			IFrameUrl:    iframeUrl.String(),
+			Signature:   src.Signature,
+			Title:       src.Title,
+			Year:        src.GetDate(),
+			Authors:     []string{},
+			Description: src.GetAbstract(),
 		}
+		if poster != nil {
+			imagePath, err := mediaUrl(
+				"jpg",
+				poster.Uri+"/resize/size1024x768/formatjpeg")
+			thumbPath, err := mediaUrl(
+				"jpg",
+				poster.Uri+"/resize/size240x240/formatjpeg")
+			if err != nil {
+				return nil, emperror.Wrapf(err, "cannot create path for %s", poster.Uri)
+			}
+
+			imageUrl, err := bb.dataUrl.Parse(fmt.Sprintf("werke/%d/derivate/%s", workid, imagePath))
+			if err != nil {
+				return nil, emperror.Wrapf(err, "cannot parse url %s -> %s", bb.urlExt.String(), imagePath)
+			}
+			thumbUrl, err := bb.dataUrl.Parse(fmt.Sprintf("werke/%d/derivate/%s", workid, thumbPath))
+			if err != nil {
+				return nil, emperror.Wrapf(err, "cannot parse url %s -> %s", bb.urlExt.String(), imagePath)
+			}
+			work.ImageUrl = imageUrl.String()
+			work.ThumbnailUrl = thumbUrl.String()
+		}
+		iframeUrl, err := bb.urlExt.Parse(fmt.Sprintf("document/%s", src.Signature))
+		if err != nil {
+			return nil, emperror.Wrapf(err, "cannot parse url %s -> document/%v", bb.urlExt.String(), src.Signature)
+		}
+		work.IFrameUrl = iframeUrl.String()
 		for _, p := range src.GetPersons() {
 			found := false
 			for _, a := range work.Authors {
@@ -221,10 +245,39 @@ func (bb *BangBang) GetWorksSalon() (map[string]*salon.Work, error) {
 				work.Authors = append(work.Authors, p.Name)
 			}
 		}
-		signatures[val.ID] = work
-
+		signatures[src.Signature] = work
 	}
 	return signatures, nil
+}
+
+func (bb *BangBang) GridHandler(w http.ResponseWriter, r *http.Request) {
+	if bb.dev {
+		bb.initTemplates()
+	}
+	tpl, ok := bb.templates["list.gohtml"]
+	if !ok {
+		http.Error(w, "cannot find document.gohtml", http.StatusInternalServerError)
+		return
+	}
+	works, err := bb.GetWorks()
+	if err != nil {
+		bb.logger.Errorf("cannot get works: %v", err)
+		http.Error(w, fmt.Sprintf("cannot get works: %v", err), http.StatusInternalServerError)
+		return
+	}
+	data := struct {
+		Items   []*search.SourceData
+		DataDir string
+	}{
+		Items:   works,
+		DataDir: bb.dataUrl.String(),
+	}
+	if err := tpl.Execute(w, data); err != nil {
+		bb.logger.Errorf("cannot execute template: %v", err)
+		http.Error(w, fmt.Sprintf("cannot execute template: %v", err), http.StatusInternalServerError)
+		return
+	}
+
 }
 
 func (bb *BangBang) DocumentHandler(w http.ResponseWriter, r *http.Request) {
