@@ -8,8 +8,8 @@
     <title>{{.Item.Title}}</title>
 
     <!-- Bootstrap core CSS -->
-    <link href="{{$data.DataDir}}/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <link href="{{$data.DataDir}}/video-js/css/video-js.css" rel="stylesheet" />
+    <link href="{{$data.DataDir}}bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{$data.DataDir}}video-js/css/video-js.css" rel="stylesheet" />
 
 
     <style>
@@ -91,8 +91,8 @@
 <main>
 
     {{$metaIgnore := list "titel" "year" }}
-    {{$derivatePath := list $data.DataDir "werke" .Item.SignatureOriginal "derivate" | join "/"}}
-    {{$masterPath := list $data.DataDir "werke" .Item.SignatureOriginal "master" | join "/"}}
+    {{$derivatePath := printf "%s%s/%s/%s" $data.DataDir "werke" .Item.SignatureOriginal "derivate"}}
+    {{$masterPath := printf "%s%s/%s/%s" $data.DataDir "werke" .Item.SignatureOriginal "master"}}
     <section class="container-fluid">
         <div class="row">
             <div class="col-8">
@@ -130,7 +130,7 @@
                                                     data-bs-pdftitle="#{{substr 21 31 $media.Uri}}"
                                             />
                                             <div class="overlay">
-                                                <img style="width: 40px; vertical-align: top;" src="{{$data.DataDir}}/img/PDF_file_icon.svg">
+                                                <img style="width: 40px; vertical-align: top;" src="{{$data.DataDir}}img/PDF_file_icon.svg">
                                             </div>
                                         </div>
                                 {{end}}
@@ -428,8 +428,8 @@
 </footer>
 
 
-<script src="{{$data.DataDir}}/bootstrap/js/bootstrap.bundle.js"></script>
-<script src="{{$data.DataDir}}/video-js/js/video.min.js"></script>
+<script src="{{$data.DataDir}}bootstrap/js/bootstrap.bundle.js"></script>
+<script src="{{$data.DataDir}}video-js/js/video.min.js"></script>
 
 <script>
     var imageModal = document.getElementById('imageModal')

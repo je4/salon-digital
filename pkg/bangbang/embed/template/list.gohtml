@@ -8,8 +8,8 @@
     <title>Einreichungen Bang Bang</title>
 
     <!-- Bootstrap core CSS -->
-    <link href="{{$data.DataDir}}/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <link href="{{$data.DataDir}}/datatables/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <link href="{{$data.DataDir}}bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{$data.DataDir}}datatables/css/dataTables.bootstrap5.min.css" rel="stylesheet">
 
 
     <style>
@@ -26,13 +26,40 @@
                 font-size: 3.5rem;
             }
         }
+
+        /* Ensure that the demo table scrolls */
+        th, td {  }
+        div.dataTables_wrapper {
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        tr {  }
     </style>
 
 
 </head>
-<body>
-<main>
-    <div class="row" style="width: 100%;">
+<body style="height: 100vh;">
+
+<div class="modal fade" id="documentModal" tabindex="-1" aria-labelledby="documentLabel" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content bg-dark">
+            <div class="modal-header bg-dark text-light">
+                <h5 class="modal-title bg-dark" id="documentLabel">New message</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <iframe style="width: 100%;height: 97%;" src=""></iframe>
+            </div>
+            <div class="modal-footer bg-dark">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<main style="height: calc(100vh - 130px);">
+    <div class="row" style="width: 100%; height: 100%;">
         <div class="col-md-2 d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="">
             <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
                 <svg class="bi me-2" width="40" height="32"><use xlink:href="#bootstrap"></use></svg>
@@ -85,28 +112,37 @@
                         </thead>
                         <tbody>
                         {{range $item := .Items}}
-                            <tr>
+                            <tr
+                                    style="height: 113px; overflow: hidden;"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#documentModal"
+                                    data-bs-documenturl="../document/{{$item.Signature}}"
+                                    data-bs-documenttitle="{{if (eq $item.Source "zotero2-1624911")}}Performance Chronik Basel - {{end}}#{{$item.SignatureOriginal}} {{$item.Title}}, {{$item.Date}}"
+                            >
                                 <td>
                                     {{if $item.Poster}}
-                                        <img style="width: 50px; height:50px; object-fit: cover;" src="{{$data.DataDir}}/{{mediaUrl (list $item.Poster.Uri "resize/formatpng/size50x50" | join "/") "thumb" "png"}}" loading="lazy" />
+                                        <img style="width: 50px; height:50px; object-fit: cover;" src="{{$data.DataDir}}thumb{{mediaUrl (list $item.Poster.Uri "resize/formatpng/size50x50" | join "/") "" "png"}}" loading="lazy" />
                                     {{else}}
-                                        <img src="{{$data.DataDir}}/media/placeholder.svg" style="width: 50px; height:50px;" loading="lazy" />
+                                        <img src="{{$data.DataDir}}media/placeholder.svg" style="width: 50px; height:50px;" loading="lazy" />
                                     {{end}}
                                 </td>
                                 <td>{{$item.SignatureOriginal}}</td>
-                                <td>
+                                <td style="height: 113px; overflow: hidden;">
                                     {{$num := 0}}
-                                    <b>{{- range $p := $item.Persons}}
+                                    {{- range $p := $item.Persons}}
                                         {{- if eq $p.Role "artist"}}{{if gt $num 0}}; {{end}}{{$p.Name}}{{if ne $p.Role ""}}{{end}}{{- $num = add $num 1}}{{- end}}
-                                    {{- end}}</b>
-                                    <br />
+                                    {{- end}}
+                                    <!-- <br />
                                     {{$num = 0}}
                                     {{- range $p := $item.Persons}}
                                         {{- if ne $p.Role "artist"}}{{if gt $num 0}}; {{end}}{{$p.Name}}{{if ne $p.Role ""}} ({{$p.Role}}){{end}}{{- $num = add $num 1}}{{- end}}
                                     {{- end}}
+                                    -->
                                 </td>
                                 <td>{{$item.Date}}</td>
-                                <td><a href="{{$data.DataDir}}/werke/{{$item.SignatureOriginal}}/index.html" target="_blank">{{$item.Title}}</a></td>
+                                <td>
+                                    <b>{{$item.Title}}</b>
+                                </td>
                                 <td>
                                     {{trimSuffix " (Reihenfolge am Ende vom Dateinamen benennen!) / Photo series (name sequence at the end of the file name!)" (index $item.Meta "medium")}}
                                     {{if gt (len $item.Media) 0}}
@@ -121,7 +157,7 @@
                                         // keine Uploads
                                     {{end}}
                                 </td>
-                                <td>{{index $item.Meta "performers"}}</td>
+                                <td style="height: 113px; overflow: hidden;">{{index $item.Meta "performers"}}</td>
                             </tr>
                         {{end}}
                         </tbody>
@@ -132,30 +168,50 @@
     </div>
 </main>
 
-<footer class="text-muted py-5">
+<footer class="footer text-muted py-5 bg-dark" style="height: 130px;">
     <div class="container">
-        <p class="float-end mb-1">
-            <a href="#">Back to top</a>
-        </p>
-        <p class="mb-1">Provided by <a href="https://mediathek.hgk.fhnw.ch">Mediathek HGK FHNW</a> and <a href="juergen@info-age.ch">info-age GmbH, Basel</a></p>
+        <p class="mb-1">Provided by <b>Mediathek HGK FHNW</b> and <b>info-age GmbH, Basel</b></p>
     </div>
 </footer>
 
 
-<script src="{{$data.DataDir}}/bootstrap/js/bootstrap.bundle.js"></script>
-<script src="{{$data.DataDir}}/jquery/js/jquery-3.5.1.js"></script>
-<script src="{{$data.DataDir}}/datatables/js/jquery.dataTables.min.js"></script>
-<script src="{{$data.DataDir}}/datatables/js/dataTables.bootstrap5.min.js"></script>
+<script src="{{$data.DataDir}}bootstrap/js/bootstrap.bundle.js"></script>
+<script src="{{$data.DataDir}}jquery/js/jquery-3.5.1.js"></script>
+<script src="{{$data.DataDir}}datatables/js/jquery.dataTables.min.js"></script>
+<script src="{{$data.DataDir}}datatables/js/dataTables.bootstrap5.min.js"></script>
 
 
 <script>
     $(document).ready(function() {
         $('#works').DataTable({
-            paging:   true,
+            scrollY:        "calc(100vh - 130px - 60px - 100px)",
+            //scrollX:        false,
+            scrollCollapse: false,
+            paging:         false,
+
+//            paging:   true,
             ordering: true,
             info:     false,
             search:  true
         } );
+        var documentModal = document.getElementById('documentModal')
+        documentModal.addEventListener('show.bs.modal', function (event) {
+            // Button that triggered the modal
+            var button = event.relatedTarget
+            // Extract info from data-bs-* attributes
+            var documentUrl = button.getAttribute('data-bs-documenturl')
+            var imageTitle = button.getAttribute('data-bs-documenttitle')
+
+            // If necessary, you could initiate an AJAX request here
+            // and then do the updating in a callback.
+            //
+            // Update the modal's content.
+            var modalTitle = documentModal.querySelector('.modal-title')
+            var modalBodyIFrame = documentModal.querySelector('.modal-body iframe')
+
+            modalTitle.textContent = imageTitle
+            modalBodyIFrame.src = documentUrl
+        })
     } );
 </script>
 </body>

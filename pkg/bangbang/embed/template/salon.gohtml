@@ -1,0 +1,89 @@
+{{$data := . }}<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="Jürgen Enge (juergen@info-age.net)">
+    <title>Einreichungen Bang Bang</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="{{$data.DataDir}}bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{$data.DataDir}}datatables/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+
+
+    <style>
+        .bd-placeholder-img {
+            font-size: 1.125rem;
+            text-anchor: middle;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+        }
+
+        @media (min-width: 768px) {
+            .bd-placeholder-img-lg {
+                font-size: 3.5rem;
+            }
+        }
+    </style>
+
+
+</head>
+<body style="height: 100vh;">
+
+
+<main style="height: calc(100vh - 130px);">
+    <div class="row h-100" style="width: 100%;">
+        <div class="col-md-2 d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="">
+            <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+                <svg class="bi me-2" width="40" height="32"><use xlink:href="#bootstrap"></use></svg>
+                <span class="fs-4">Bang Bang</span>
+            </a>
+            <hr>
+            <ul class="nav nav-pills flex-column mb-auto">
+                <li class="nav-item">
+                    <a href="{{$data.GridUrl}}" class="nav-link text-white" aria-current="page">
+                        <svg class="bi me-2" width="16" height="16"><use xlink:href="#home"></use></svg>
+                        Grid
+                    </a>
+                </li>
+                <li>
+                    <a href="{{$data.ListUrl}}" class="nav-link text-white">
+                        <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"></use></svg>
+                        Liste
+                    </a>
+                </li>
+                <li>
+                    <a href="{{$data.SalonUrl}}" class="nav-link active">
+                        <svg class="bi me-2" width="16" height="16"><use xlink:href="#table"></use></svg>
+                        Salon Digital
+                    </a>
+                </li>
+                <li>
+                    <a href="{{$data.PanoUrl}}" class="nav-link text-white">
+                        <svg class="bi me-2" width="16" height="16"><use xlink:href="#grid"></use></svg>
+                        Panorama
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="col-md-10" style="margin: 0; padding: 0; background-color: black;">
+            <iframe style="width: 100%; height: 100%; margin: 0; padding: 0;" src="../salon-digital/" allowfullscreen></iframe>
+        </div>
+    </div>
+</main>
+
+<footer class="text-muted py-5 bg-dark" style="height: 130px;">
+    <div class="container">
+        <p class="mb-1">Provided by <b>Mediathek HGK FHNW</b> and <b>info-age GmbH, Basel</b></p>
+    </div>
+</footer>
+
+
+<script src="{{$data.DataDir}}bootstrap/js/bootstrap.bundle.js"></script>
+
+</body>
+</html>
+

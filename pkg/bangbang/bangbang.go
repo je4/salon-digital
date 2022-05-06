@@ -250,6 +250,65 @@ func (bb *BangBang) GetWorksSalon() (map[string]*salon.Work, error) {
 	return signatures, nil
 }
 
+func (bb *BangBang) ListHandler(w http.ResponseWriter, r *http.Request) {
+	if bb.dev {
+		bb.initTemplates()
+	}
+	tpl, ok := bb.templates["list.gohtml"]
+	if !ok {
+		http.Error(w, "cannot find document.gohtml", http.StatusInternalServerError)
+		return
+	}
+	works, err := bb.GetWorks()
+	if err != nil {
+		bb.logger.Errorf("cannot get works: %v", err)
+		http.Error(w, fmt.Sprintf("cannot get works: %v", err), http.StatusInternalServerError)
+		return
+	}
+	salonUrl, err := bb.urlExt.Parse("/salon/")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("cannot parse url %s -> %s", bb.urlExt.String(), "/salon"), http.StatusInternalServerError)
+		return
+	}
+	listUrl, err := bb.urlExt.Parse("/list/")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("cannot parse url %s -> %s", bb.urlExt.String(), "/list"), http.StatusInternalServerError)
+		return
+	}
+	gridUrl, err := bb.urlExt.Parse("/grid/")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("cannot parse url %s -> %s", bb.urlExt.String(), "/grid"), http.StatusInternalServerError)
+		return
+	}
+	panoUrl, err := bb.urlExt.Parse("/pano/")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("cannot parse url %s -> %s", bb.urlExt.String(), "/pano"), http.StatusInternalServerError)
+		return
+	}
+	data := struct {
+		Items    []*search.SourceData
+		DataDir  string
+		SalonUrl string
+		ListUrl  string
+		GridUrl  string
+		PanoUrl  string
+	}{
+		Items:    works,
+		DataDir:  bb.dataUrl.String(),
+		SalonUrl: salonUrl.String(),
+		ListUrl:  listUrl.String(),
+		GridUrl:  gridUrl.String(),
+		PanoUrl:  panoUrl.String(),
+	}
+
+	if err := tpl.Execute(w, data); err != nil {
+		bb.logger.Errorf("cannot execute template: %v", err)
+		http.Error(w, fmt.Sprintf("cannot execute template: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+}
+
 func (bb *BangBang) GridHandler(w http.ResponseWriter, r *http.Request) {
 	if bb.dev {
 		bb.initTemplates()
@@ -265,12 +324,91 @@ func (bb *BangBang) GridHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("cannot get works: %v", err), http.StatusInternalServerError)
 		return
 	}
+	salonUrl, err := bb.urlExt.Parse("/salon/")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("cannot parse url %s -> %s", bb.urlExt.String(), "/salon"), http.StatusInternalServerError)
+		return
+	}
+	listUrl, err := bb.urlExt.Parse("/list/")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("cannot parse url %s -> %s", bb.urlExt.String(), "/list"), http.StatusInternalServerError)
+		return
+	}
+	gridUrl, err := bb.urlExt.Parse("/grid/")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("cannot parse url %s -> %s", bb.urlExt.String(), "/grid"), http.StatusInternalServerError)
+		return
+	}
+	panoUrl, err := bb.urlExt.Parse("/pano/")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("cannot parse url %s -> %s", bb.urlExt.String(), "/pano"), http.StatusInternalServerError)
+		return
+	}
 	data := struct {
-		Items   []*search.SourceData
-		DataDir string
+		Items    []*search.SourceData
+		DataDir  string
+		SalonUrl string
+		ListUrl  string
+		GridUrl  string
+		PanoUrl  string
 	}{
-		Items:   works,
-		DataDir: bb.dataUrl.String(),
+		Items:    works,
+		DataDir:  bb.dataUrl.String(),
+		SalonUrl: salonUrl.String(),
+		ListUrl:  listUrl.String(),
+		GridUrl:  gridUrl.String(),
+		PanoUrl:  panoUrl.String(),
+	}
+
+	if err := tpl.Execute(w, data); err != nil {
+		bb.logger.Errorf("cannot execute template: %v", err)
+		http.Error(w, fmt.Sprintf("cannot execute template: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+}
+
+func (bb *BangBang) SalonHandler(w http.ResponseWriter, r *http.Request) {
+	if bb.dev {
+		bb.initTemplates()
+	}
+	tpl, ok := bb.templates["salon.gohtml"]
+	if !ok {
+		http.Error(w, "cannot find document.gohtml", http.StatusInternalServerError)
+		return
+	}
+	salonUrl, err := bb.urlExt.Parse("/salon/")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("cannot parse url %s -> %s", bb.urlExt.String(), "/salon"), http.StatusInternalServerError)
+		return
+	}
+	listUrl, err := bb.urlExt.Parse("/list/")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("cannot parse url %s -> %s", bb.urlExt.String(), "/list"), http.StatusInternalServerError)
+		return
+	}
+	gridUrl, err := bb.urlExt.Parse("/grid/")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("cannot parse url %s -> %s", bb.urlExt.String(), "/grid"), http.StatusInternalServerError)
+		return
+	}
+	panoUrl, err := bb.urlExt.Parse("/pano/")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("cannot parse url %s -> %s", bb.urlExt.String(), "/pano"), http.StatusInternalServerError)
+		return
+	}
+	data := struct {
+		DataDir  string
+		PanoUrl  string
+		SalonUrl string
+		ListUrl  string
+		GridUrl  string
+	}{
+		SalonUrl: salonUrl.String(),
+		ListUrl:  listUrl.String(),
+		GridUrl:  gridUrl.String(),
+		DataDir:  bb.dataUrl.String(),
+		PanoUrl:  panoUrl.String(),
 	}
 	if err := tpl.Execute(w, data); err != nil {
 		bb.logger.Errorf("cannot execute template: %v", err)

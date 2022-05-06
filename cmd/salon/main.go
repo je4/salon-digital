@@ -175,11 +175,15 @@ func main() {
 	if err != nil {
 		logger.Panicf("cannot initialize server: %v", err)
 	}
-	srv.AddSubServer("/salon", salonDigital)
+	srv.AddSubServer("/salon-digital", salonDigital)
 	bbd := &bangbang.BBDocs{BangBang: bb}
 	srv.AddSubServer("/document", bbd)
 	bbg := &bangbang.BBGrid{BangBang: bb}
 	srv.AddSubServer("/grid", bbg)
+	bbl := &bangbang.BBList{BangBang: bb}
+	srv.AddSubServer("/list", bbl)
+	bbs := &bangbang.BBSalon{BangBang: bb}
+	srv.AddSubServer("/salon", bbs)
 
 	go func() {
 		if err := srv.ListenAndServe(config.CertPem, config.KeyPem); err != nil {
