@@ -121,7 +121,7 @@
                             >
                                 <td>
                                     {{if $item.Poster}}
-                                        <img style="width: 50px; height:50px; object-fit: cover;" src="{{$data.DataDir}}thumb{{mediaUrl (list $item.Poster.Uri "resize/formatpng/size50x50" | join "/") "" "png"}}" loading="lazy" />
+                                        <img style="width: 50px; height:50px; object-fit: cover;" src="{{list $data.DataDir "thumb" (mediaUrl (list $item.Poster.Uri "/resize/formatpng/size50x50" | join "") "png") | joinSingle "/"}}" loading="lazy" />
                                     {{else}}
                                         <img src="{{$data.DataDir}}media/placeholder.svg" style="width: 50px; height:50px;" loading="lazy" />
                                     {{end}}

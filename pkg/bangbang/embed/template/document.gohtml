@@ -8,8 +8,8 @@
     <title>{{.Item.Title}}</title>
 
     <!-- Bootstrap core CSS -->
-    <link href="{{$data.DataDir}}bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <link href="{{$data.DataDir}}video-js/css/video-js.css" rel="stylesheet" />
+    <link href="{{list $data.DataDir "bootstrap/css/bootstrap.min.css" | joinSingle "/"}}" rel="stylesheet">
+    <link href="{{list $data.DataDir "video-js/css/video-js.css" | joinSingle "/"}}" rel="stylesheet" />
 
 
     <style>
@@ -91,8 +91,9 @@
 <main>
 
     {{$metaIgnore := list "titel" "year" }}
-    {{$derivatePath := printf "%s%s/%s/%s" $data.DataDir "werke" .Item.SignatureOriginal "derivate"}}
-    {{$masterPath := printf "%s%s/%s/%s" $data.DataDir "werke" .Item.SignatureOriginal "master"}}
+    {{$derivatePath := list $data.DataDir "werke" .Item.SignatureOriginal "derivate" | joinSingle "/"}}
+    {{$masterPath := list $data.DataDir "werke" .Item.SignatureOriginal "master" | joinSingle "/"}}
+    {{$thumbPath := list $data.DataDir "thumb" | joinSingle "/"}}
     <section class="container-fluid">
         <div class="row">
             <div class="col-8">
@@ -108,11 +109,11 @@
                                             <img
                                                     style="object-fit: cover; width: 200px; height:200px; float:left;"
                                                     class="rounded m-1"
-                                                    src="{{mediaUrl (list $media.Uri "resize/formatjpeg/size240x240" | join "/") $derivatePath "jpg"}}"
+                                                    src="{{list $derivatePath (mediaUrl (list $media.Uri "/resize/formatjpeg/size240x240" | join "") "jpg") | joinSingle "/"}}"
                                                     loading="lazy"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#imageModal"
-                                                    data-bs-imageurl="{{mediaUrl (list $media.Uri "resize/formatjpeg/size800x600" | join "/") $derivatePath "jpg"}}"
+                                                    data-bs-imageurl="{{list $derivatePath (mediaUrl (list $media.Uri "/resize/formatjpeg/size800x600" | join "") "jpg") | joinSingle "/"}}"
                                                     data-bs-imagetitle="#{{substr 21 31 $media.Uri}}"
                                             />
                                 {{end}}
@@ -122,15 +123,15 @@
                                         <div style="position: relative">
                                             <img
                                                     style="width: 200px; height:200px; object-fit: cover;"
-                                                    src="{{mediaUrl (list $media.Uri "$$poster/resize/formatjpeg/size240x240" | join "") $derivatePath "jpg"}}"
+                                                    src="{{list $derivatePath (mediaUrl (list $media.Uri "$$poster/resize/formatjpeg/size240x240" | join "") "jpg") | joinSingle "/"}}"
                                                     loading="lazy"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#pdfModal"
-                                                    data-bs-pdfurl="{{mediaUrl (list $media.Uri "master" | join "/") $masterPath "pdf"}}#toolbar=0"
+                                                    data-bs-pdfurl="{{list $masterPath (mediaUrl (list $media.Uri "master" | joinSingle "/") "pdf") | joinSingle "/"}}#toolbar=0"
                                                     data-bs-pdftitle="#{{substr 21 31 $media.Uri}}"
                                             />
                                             <div class="overlay">
-                                                <img style="width: 40px; vertical-align: top;" src="{{$data.DataDir}}img/PDF_file_icon.svg">
+                                                <img style="width: 40px; vertical-align: top;" src="{{list $data.DataDir "img/PDF_file_icon.svg" | joinSingle "/"}}">
                                             </div>
                                         </div>
                                 {{end}}
@@ -149,10 +150,10 @@
                                                         preload="auto"
                                                         width="640"
                                                         height="264"
-                                                        poster="{{mediaUrl (list $media.Uri "$$timeshot$$3/resize/formatjpeg/size640x264" | join "") $derivatePath "jpg"}}"
+                                                        poster="{{list $derivatePath (mediaUrl (list $media.Uri "$$timeshot$$3/resize/formatjpeg/size640x264" | join "") "jpg") | joinSingle "/"}}"
                                                         data-setup="{}"
                                                 >
-                                                    <source src="{{mediaUrl (list $media.Uri "$$web/master" | join "") $derivatePath "mp4"}}" type="video/mp4" />
+                                                    <source src="{{list $derivatePath (mediaUrl (list $media.Uri "$$web/master" | join "") "mp4") | joinSingle "/"}}" type="video/mp4" />
                                                     <p class="vjs-no-js">
                                                         To view this video please enable JavaScript, and consider upgrading to a
                                                         web browser that
@@ -166,7 +167,7 @@
                                                     {{range $shot := list "3" "8" "12" "17" "22"}}
                                                         <img
                                                                 style="height: 100px;"
-                                                                src="{{mediaUrl (list $media.Uri "$$timeshot$$" $shot "/resize/formatjpeg/size320x132" | join "") $derivatePath "jpg"}}"
+                                                                src="{{list  $derivatePath (mediaUrl (list $media.Uri "$$timeshot$$" $shot "/resize/formatjpeg/size320x132" | join "") "jpg") | joinSingle "/" }}"
                                                                 class=""
                                                                 alt="Videoshot {{$shot}}">
                                                     {{end}}
@@ -188,10 +189,10 @@
                                                 preload="auto"
                                                 width="640"
                                                 height="264"
-                                                poster="{{mediaUrl (list $media.Uri "$$poster/resize/formatjpeg/size640x264/stretch" | join "") $derivatePath "jpg"}}"
+                                                poster="{{list $derivatePath (mediaUrl (list $media.Uri "$$poster/resize/formatjpeg/size640x264/stretch" | join "") "jpg") | joinSingle "/"}}"
                                                 data-setup="{}"
                                         >
-                                            <source src="{{mediaUrl (list $media.Uri "$$web$$1/master" | join "") $derivatePath "m4a"}}" type="audio/mp4" />
+                                            <source src="{{list $derivatePath (mediaUrl (list $media.Uri "$$web$$1/master" | join "") "m4a") | joinSingle "/"}}" type="audio/mp4" />
                                             <p class="vjs-no-js">
                                                 To view this video please enable JavaScript, and consider upgrading to a
                                                 web browser that

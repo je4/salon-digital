@@ -55,13 +55,13 @@
                     </a>
                 </li>
                 <li>
-                    <a href="{{$data.SalonUrl}}" class="nav-link active">
+                    <a href="{{$data.SalonUrl}}" class="nav-link text-white">
                         <svg class="bi me-2" width="16" height="16"><use xlink:href="#table"></use></svg>
                         Salon Digital
                     </a>
                 </li>
                 <li>
-                    <a href="{{$data.PanoUrl}}" class="nav-link text-white">
+                    <a href="{{$data.PanoUrl}}" class="nav-link active">
                         <svg class="bi me-2" width="16" height="16"><use xlink:href="#grid"></use></svg>
                         Panorama
                     </a>
@@ -70,7 +70,7 @@
         </div>
 
         <div class="col-md-10" style="margin: 0; padding: 0; background-color: black;">
-            <iframe style="width: 100%; height: 100%; margin: 0; padding: 0;" src="../salon-digital/" allowfullscreen></iframe>
+            <div id="collage" style="width: 100%; height: 100%;"></div>
         </div>
     </div>
 </main>
@@ -83,7 +83,43 @@
 
 
 <script src="{{list $data.DataDir "bootstrap/js/bootstrap.bundle.js" | joinSingle "/"}}"></script>
+<script src="{{list $data.DataDir "/openseadragon/openseadragon.min.js" | joinSingle "/"}}"></script>
+<script type="text/javascript">
+    var viewer = OpenSeadragon({
+        id: "collage",
+        showNavigator: true,
+        prefixUrl: "{{list $data.DataDir "openseadragon/images/" | joinSingle "/"}}",
+        tileSources: "{{list $data.DataDir "collage.dzi" | joinSingle "/"}}"
+    });
+    viewer.gestureSettingsMouse.clickToZoom = false;
+    viewer.addHandler('canvas-double-click', function(event) {
+        // The canvas-click event gives us a position in web coordinates.
+        var webPoint = event.position;
 
+        // Convert that to viewport coordinates, the lingua franca of OpenSeadragon coordinates.
+        var viewportPoint = viewer.viewport.pointFromPixel(webPoint);
+
+        // Convert from viewport coordinates to image coordinates.
+        var imagePoint = viewer.viewport.viewportToImageCoordinates(viewportPoint);
+
+        // Show the results.
+        console.log(webPoint.toString(), viewportPoint.toString(), imagePoint.toString());
+
+        var xhr = new XMLHttpRequest();
+        var url = "signature/"+Math.round(imagePoint.x)+"x"+Math.round(imagePoint.y);
+        xhr.open("GET", url, true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                let json = JSON.parse(xhr.responseText);
+                if (json == null) return;
+                let signature = json;
+                console.log("Signature: "+signature)
+            }
+        }
+        xhr.send(null);
+    });
+</script>
 </body>
 </html>
 

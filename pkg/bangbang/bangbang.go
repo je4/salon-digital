@@ -2,22 +2,21 @@ package bangbang
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/Masterminds/sprig"
 	"github.com/blevesearch/bleve/v2"
 	"github.com/goph/emperror"
 	"github.com/gorilla/mux"
 	"github.com/je4/salon-digital/v2/pkg/salon"
+	"github.com/je4/salon-digital/v2/pkg/tplfunctions"
 	"github.com/je4/zsearch/v2/pkg/search"
 	"github.com/op/go-logging"
 	"html/template"
+	"image"
 	"io/fs"
 	"net/http"
 	"net/url"
 	"path/filepath"
-	"regexp"
-	"sort"
 	"strconv"
 	"strings"
 )
@@ -28,15 +27,17 @@ type BangBang struct {
 	dataUrl    *url.URL
 	logger     *logging.Logger
 	dev        bool
+	collagePos map[string][]image.Rectangle
 	templates  map[string]*template.Template
 	templateFS fs.FS
 }
 
-func NewBangBang(index bleve.Index, urlExt *url.URL, dataUrl *url.URL, templateFS fs.FS, logger *logging.Logger, dev bool) (*BangBang, error) {
+func NewBangBang(index bleve.Index, urlExt *url.URL, dataUrl *url.URL, collagePos map[string][]image.Rectangle, templateFS fs.FS, logger *logging.Logger, dev bool) (*BangBang, error) {
 	b := &BangBang{
 		index:      index,
 		urlExt:     urlExt,
 		dataUrl:    dataUrl,
+		collagePos: collagePos,
 		logger:     logger,
 		dev:        dev,
 		templateFS: templateFS,
@@ -68,6 +69,7 @@ func findAllFiles(fsys fs.FS, dir, suffix string) ([]string, error) {
 	return result, nil
 }
 
+/*
 var mediaserverRegexp = regexp.MustCompile("^mediaserver:([^/]+)/([^/]+)/(.+)$")
 
 func mediaUrl(extension, mediaserverUrl string) (string, error) {
@@ -96,42 +98,12 @@ func mediaUrl(extension, mediaserverUrl string) (string, error) {
 	fullpath := filepath.Join(filename)
 	return fullpath, nil
 }
+*/
 func (bb *BangBang) initTemplates() error {
 	funcMap := sprig.FuncMap()
-	funcMap["iterate"] = func(count int) []int {
-		var i int
-		var Items []int
-		for i = 0; i < count; i++ {
-			Items = append(Items, i)
-		}
-		return Items
+	for k, v := range tplfunctions.GetFuncMap() {
+		funcMap[k] = v
 	}
-	funcMap["mediaUrl"] = func(mediaUri, path, ext string) string {
-		filename, err := mediaUrl(ext, mediaUri)
-		if err != nil {
-			bb.logger.Errorf("invalid media url %s: %v", mediaUri, err)
-			return ""
-		}
-		path = strings.TrimRight(path, "/") + "/"
-		u, err := url.Parse(path)
-		if err != nil {
-			bb.logger.Errorf("invalid url %s: %b", path, err)
-			return ""
-		}
-		newUrl, err := u.Parse(filename)
-		if err != nil {
-			bb.logger.Errorf("invalid url %s: %b", path, err)
-			return ""
-		}
-		return newUrl.String()
-	}
-	funcMap["correctWeb"] = func(u string) string {
-		if strings.HasPrefix(strings.ToLower(u), "http") {
-			return u
-		}
-		return "https://" + u
-	}
-
 	templateFiles, err := findAllFiles(bb.templateFS, ".", ".gohtml")
 	if err != nil {
 		return emperror.Wrap(err, "cannot find templates")
@@ -158,7 +130,18 @@ func (bb *BangBang) GetWork(signature string) (*search.SourceData, error) {
 	}
 	return src, nil
 }
-
+func (bb *BangBang) GetSignatureP(posX, posY int) string {
+	for sig, rects := range bb.collagePos {
+		for _, rect := range rects {
+			if posX >= rect.Min.X && posX <= rect.Max.X {
+				if posY >= rect.Min.Y && posY <= rect.Max.Y {
+					return sig
+				}
+			}
+		}
+	}
+	return ""
+}
 func (bb *BangBang) GetWorks() ([]*search.SourceData, error) {
 	bQuery := bleve.NewMatchAllQuery()
 	bSearch := bleve.NewSearchRequest(bQuery)
@@ -207,26 +190,23 @@ func (bb *BangBang) GetWorksSalon() (map[string]*salon.Work, error) {
 			Description: src.GetAbstract(),
 		}
 		if poster != nil {
-			imagePath, err := mediaUrl(
-				"jpg",
-				poster.Uri+"/resize/size1024x768/formatjpeg")
-			thumbPath, err := mediaUrl(
-				"jpg",
-				poster.Uri+"/resize/size240x240/formatjpeg")
+			imagePath := fmt.Sprintf(
+				"%s/data/werke/%v/derivate/%s",
+				strings.TrimRight(bb.urlExt.String(), "/"),
+				workid,
+				tplfunctions.MediaUrl(poster.Uri+"/resize/size1024x768/formatjpeg", "jpg"),
+			)
+			thumbPath := fmt.Sprintf(
+				"%s/data/thumb/%s",
+				strings.TrimRight(bb.urlExt.String(), "/"),
+				tplfunctions.MediaUrl(poster.Uri+"/resize/size240x240/formatjpeg", "jpg"),
+			)
 			if err != nil {
 				return nil, emperror.Wrapf(err, "cannot create path for %s", poster.Uri)
 			}
 
-			imageUrl, err := bb.dataUrl.Parse(fmt.Sprintf("werke/%d/derivate/%s", workid, imagePath))
-			if err != nil {
-				return nil, emperror.Wrapf(err, "cannot parse url %s -> %s", bb.urlExt.String(), imagePath)
-			}
-			thumbUrl, err := bb.dataUrl.Parse(fmt.Sprintf("werke/%d/derivate/%s", workid, thumbPath))
-			if err != nil {
-				return nil, emperror.Wrapf(err, "cannot parse url %s -> %s", bb.urlExt.String(), imagePath)
-			}
-			work.ImageUrl = imageUrl.String()
-			work.ThumbnailUrl = thumbUrl.String()
+			work.ImageUrl = imagePath
+			work.ThumbnailUrl = thumbPath
 		}
 		iframeUrl, err := bb.urlExt.Parse(fmt.Sprintf("document/%s", src.Signature))
 		if err != nil {
@@ -375,6 +355,56 @@ func (bb *BangBang) SalonHandler(w http.ResponseWriter, r *http.Request) {
 	tpl, ok := bb.templates["salon.gohtml"]
 	if !ok {
 		http.Error(w, "cannot find document.gohtml", http.StatusInternalServerError)
+		return
+	}
+	salonUrl, err := bb.urlExt.Parse("/salon/")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("cannot parse url %s -> %s", bb.urlExt.String(), "/salon"), http.StatusInternalServerError)
+		return
+	}
+	listUrl, err := bb.urlExt.Parse("/list/")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("cannot parse url %s -> %s", bb.urlExt.String(), "/list"), http.StatusInternalServerError)
+		return
+	}
+	gridUrl, err := bb.urlExt.Parse("/grid/")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("cannot parse url %s -> %s", bb.urlExt.String(), "/grid"), http.StatusInternalServerError)
+		return
+	}
+	panoUrl, err := bb.urlExt.Parse("/pano/")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("cannot parse url %s -> %s", bb.urlExt.String(), "/pano"), http.StatusInternalServerError)
+		return
+	}
+	data := struct {
+		DataDir  string
+		PanoUrl  string
+		SalonUrl string
+		ListUrl  string
+		GridUrl  string
+	}{
+		SalonUrl: salonUrl.String(),
+		ListUrl:  listUrl.String(),
+		GridUrl:  gridUrl.String(),
+		DataDir:  bb.dataUrl.String(),
+		PanoUrl:  panoUrl.String(),
+	}
+	if err := tpl.Execute(w, data); err != nil {
+		bb.logger.Errorf("cannot execute template: %v", err)
+		http.Error(w, fmt.Sprintf("cannot execute template: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+}
+
+func (bb *BangBang) ZoomHandler(w http.ResponseWriter, r *http.Request) {
+	if bb.dev {
+		bb.initTemplates()
+	}
+	tpl, ok := bb.templates["zoom.gohtml"]
+	if !ok {
+		http.Error(w, "cannot find zoom.gohtml", http.StatusInternalServerError)
 		return
 	}
 	salonUrl, err := bb.urlExt.Parse("/salon/")

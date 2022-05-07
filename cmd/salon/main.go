@@ -18,6 +18,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 )
@@ -110,11 +111,24 @@ func main() {
 		bangTemplateFS = os.DirFS(config.Bang.TemplateDir)
 	}
 
+	var collagePos = map[string][]image.Rectangle{}
+	collageFilename := filepath.Join(config.DataDir, "collage.json")
+	fp, err := os.Open(collageFilename)
+	if err != nil {
+		logger.Panicf("cannot open %s: %v", collageFilename, err)
+	}
+	jsonDec := json.NewDecoder(fp)
+	if err := jsonDec.Decode(&collagePos); err != nil {
+		fp.Close()
+		logger.Panicf("cannot decode %s: %v", collageFilename, err)
+	}
+	fp.Close()
+
 	dataUrl, err := urlExt.Parse("data/")
 	if err != nil {
 		logger.Panicf("cannot parse url %s -> %s: %v", urlExt.String(), "data", err)
 	}
-	bb, err := bangbang.NewBangBang(index, urlExt, dataUrl, bangTemplateFS, logger, config.Bang.TemplateDev)
+	bb, err := bangbang.NewBangBang(index, urlExt, dataUrl, collagePos, bangTemplateFS, logger, config.Bang.TemplateDev)
 	if err != nil {
 		logger.Panicf("cannot instantiate bangbang: %v", err)
 	}
@@ -184,6 +198,8 @@ func main() {
 	srv.AddSubServer("/list", bbl)
 	bbs := &bangbang.BBSalon{BangBang: bb}
 	srv.AddSubServer("/salon", bbs)
+	bbz := &bangbang.BBZoom{BangBang: bb}
+	srv.AddSubServer("/pano", bbz)
 
 	go func() {
 		if err := srv.ListenAndServe(config.CertPem, config.KeyPem); err != nil {

@@ -4,6 +4,7 @@ import (
 	"github.com/Masterminds/sprig"
 	"github.com/goph/emperror"
 	"github.com/gorilla/mux"
+	"github.com/je4/salon-digital/v2/pkg/tplfunctions"
 	"github.com/op/go-logging"
 	"html/template"
 	"io/fs"
@@ -36,13 +37,8 @@ func NewSalon(works map[string]*Work, staticFS, templateFS fs.FS, templateDev bo
 
 func (s *Salon) initTemplates() (err error) {
 	funcMap := sprig.FuncMap()
-	funcMap["iterate"] = func(count int) []int {
-		var i int
-		var Items []int
-		for i = 0; i < count; i++ {
-			Items = append(Items, i)
-		}
-		return Items
+	for k, v := range tplfunctions.GetFuncMap() {
+		funcMap[k] = v
 	}
 	templateFiles, err := findAllFiles(s.templateFS, ".", ".gohtml")
 	if err != nil {
