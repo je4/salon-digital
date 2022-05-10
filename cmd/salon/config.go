@@ -36,6 +36,7 @@ type SalonDigitalConfig struct {
 	Password   string      `toml:"password"`
 	Salon      SalonConfig `toml:"salon"`
 	Bang       BangConfig
+	Browser    bool
 }
 
 func LoadSalonDigitalConfig(fp string, conf *SalonDigitalConfig) error {

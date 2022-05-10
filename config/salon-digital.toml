@@ -3,8 +3,9 @@
 #basedir = "./web/static"
 #addr = "localhost:84"
 #addrext = "https://localhost/"
-#user = "sam"
-#password = "samantha"
+browser = false
+user = "bangbang"
+password = "2022"
 datadir = "c:/temp/bangbang"
 bleveindex = "c:/temp/bangbang/bangbang.bleve"
 [salon]

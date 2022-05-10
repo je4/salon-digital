@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+{{$data := .}}<!DOCTYPE html>
 <html>
 <head>
     {{$labsize := .Lab.Size}}
@@ -8,7 +8,7 @@
     <link rel="apple-touch-icon" href="./img/sdmllogo.png">
     <meta name="theme-color" content="#ffffff">
     <title>Salon Digital</title>
-    <link rel="stylesheet" href="./static/css/salon.css" type="text/css">
+    <link rel="stylesheet" href="{{.BaseAddr}}static/css/salon.css" type="text/css">
     <style>
         :root {
             --grid-max-width: {{$labsize}};
@@ -76,19 +76,19 @@
 <body>
 <div>
 <div id="sdmlwrapper">
-    <div id="gridtopleft" class="center"><img class="pixelated" src="./img/old-list/tent.png"></div>
+    <div id="gridtopleft" class="center"><img class="pixelated" src="{{.BaseAddr}}img/old-list/tent.png"></div>
     <div id="gridtopcenter" class="center">
         <div style="text-align: center; width: 100%;">wvdc: Navigating SDML, now on (-186185685)</div>
     </div>
-    <div id="gridtopright" class="center"><a href=""><img class="pixelated" src="./static/img/bangbang_mini.png"></a></div>
+    <div id="gridtopright" class="center"><a href=""><img class="pixelated" src="{{.BaseAddr}}static/img/bangbang_mini.png"></a></div>
 
     <div id="gridmiddleleft"  class="hcenter">
         <table class="navtable">
-            <tr><td><img class="pixelated hcenter" src="./img/old-list/n.png"></td></tr>
-            <tr><td><img class="pixelated hcenter" src="./img/old-list/a.png"></td></tr>
-            <tr><td><img class="pixelated hcenter" src="./img/old-list/c.png"></td></tr>
-            <tr><td><img class="pixelated hcenter" src="./img/old-list/e.png"></td></tr>
-            <tr><td><img class="pixelated hcenter" src="./img/old-list/s.png"></td></tr>
+            <tr><td><img class="pixelated hcenter" src="{{.BaseAddr}}img/old-list/n.png"></td></tr>
+            <tr><td><img class="pixelated hcenter" src="{{.BaseAddr}}img/old-list/a.png"></td></tr>
+            <tr><td><img class="pixelated hcenter" src="{{.BaseAddr}}img/old-list/c.png"></td></tr>
+            <tr><td><img class="pixelated hcenter" src="{{.BaseAddr}}img/old-list/e.png"></td></tr>
+            <tr><td><img class="pixelated hcenter" src="{{.BaseAddr}}img/old-list/s.png"></td></tr>
         </table>
     </div>
     <div id="gridlabyrinthheading"></div>
@@ -98,7 +98,7 @@
     <!-- div id="gridlabyrinth"></div -->
     {{- range $i, $row := .Lab.Fields}}
         {{- range $j, $col := $row}}
-            <div id="lab_{{$i}}_{{$j}}" class="labcell"><img alt="{{$col}} {{$i}}/{{$j}}" src="./img/labyrinth/{{$col.Name}}.png" class="pixelated"></div>
+            <div id="lab_{{$i}}_{{$j}}" class="labcell"><img alt="{{$col}} {{$i}}/{{$j}}" src="{{$data.BaseAddr}}img/labyrinth/{{$col.Name}}.png" class="pixelated"></div>
         {{- end}}
     {{- end}}
     <div id="gridcontent">
@@ -129,27 +129,31 @@
 <div id="detail" class="modal">
     <div id="detailcontent">
         <div id="detailheader">
-            <img style="float: right; width:40px; height: 40px; margin: 20px;" src="./static/img/Black_close_x.svg">
+            <img style="float: right; width:40px; height: 40px; margin: 20px;" src="{{.BaseAddr}}static/img/Black_close_x.svg">
         </div>
         <iframe id="detailiframe" src="" allowfullscreen ></iframe>
     </div>
 
 </div>
 
-<script src="./static/js/axios.min.js"></script>
+<script src="{{.BaseAddr}}static/js/axios.min.js"></script>
 <script>
     let lab = JSON.parse('{{toJson .Lab}}');
     let workActive = false
+    let signature = ""
 
     var detail = document.getElementById("detail")
     var detailiframe = document.getElementById("detailiframe")
     var btn = document.getElementById("gridcontenttext");
     btn.onclick = function() {
         if(workActive) {
+            parent.ShowWork(signature)
+            /*
             detailiframe.src = detailiframe.dataset.iframe
             detail.style.display = "block";
             detail.style.transition = "all 2s ease-in-out";
             detail.style.height = "100%";
+             */
         }
     }
     detail.onclick = function () {
@@ -209,6 +213,12 @@
         dirField.innerText = dirStr;
     }
 
+    function _setWork(work) {
+        if(work != null) {
+            parent.ShowWork(work.Signature);
+        }
+    }
+
     function setWork(work) {
         let img = document.getElementById("gridcontentimage");
         let cnt = document.getElementById("gridcontenttext");
@@ -228,6 +238,7 @@
             description.innerText = work.Description;
             workActive = true;
             detailiframe.dataset.iframe = work.IFrameUrl;
+            signature = work.Signature;
         } else {
             img.src = "";
             cnt.style.visibility = "hidden";
@@ -271,7 +282,7 @@
                     for( j = 0; j < lab.Size; j++ ) {
                         let fld = document.getElementById("lab_"+i+"_"+j);
                         let img = fld.firstChild;
-                        img.src = "./img/labyrinth/"+lab.Fields[i][j].Name+".png";
+                        img.src = "{{.BaseAddr}}img/labyrinth/"+lab.Fields[i][j].Name+".png";
                         if( i == j && i == middle ) {
                             setWork(lab.Fields[i][j].Work)
                         }

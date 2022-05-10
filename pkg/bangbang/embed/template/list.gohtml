@@ -58,23 +58,20 @@
     </div>
 </div>
 
-<main style="height: calc(100vh - 130px);">
+<main style="height: calc(100vh - 60px);">
     <div class="row" style="width: 100%; height: 100%;">
         <div class="col-md-2 d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="">
-            <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-                <svg class="bi me-2" width="40" height="32"><use xlink:href="#bootstrap"></use></svg>
-                <span class="fs-4">Bang Bang</span>
-            </a>
+            <span class="fs-4" style="text-align: center;"><img src="{{list $data.DataDir "media/bangbang_300x300.png" | joinSingle "/"}}" style="width: 200px;"/></span>
             <hr>
             <ul class="nav nav-pills flex-column mb-auto">
                 <li class="nav-item">
-                    <a href="#" class="nav-link text-white" aria-current="page">
+                    <a href="../grid/" class="nav-link text-white" aria-current="page">
                         <svg class="bi me-2" width="16" height="16"><use xlink:href="#home"></use></svg>
                         Grid
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="nav-link active">
+                    <a href="../list/" class="nav-link bg-secondary active">
                         <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"></use></svg>
                         Liste
                     </a>
@@ -86,7 +83,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="nav-link text-white">
+                    <a href="../pano/" class="nav-link text-white">
                         <svg class="bi me-2" width="16" height="16"><use xlink:href="#grid"></use></svg>
                         Panorama
                     </a>
@@ -168,7 +165,7 @@
     </div>
 </main>
 
-<footer class="footer text-muted py-5 bg-dark" style="height: 130px;">
+<footer class="footer text-muted py-3 bg-dark">
     <div class="container">
         <p class="mb-1">Provided by <b>Mediathek HGK FHNW</b> and <b>info-age GmbH, Basel</b></p>
     </div>
@@ -184,7 +181,7 @@
 <script>
     $(document).ready(function() {
         $('#works').DataTable({
-            scrollY:        "calc(100vh - 130px - 60px - 100px)",
+            scrollY:        "calc(100vh - 60px - 60px - 100px)",
             //scrollX:        false,
             scrollCollapse: false,
             paging:         false,

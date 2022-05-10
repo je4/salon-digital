@@ -3,6 +3,7 @@ package salon
 import (
 	"fmt"
 	"net/http"
+	"strings"
 )
 
 func (s *Salon) MainHandler(w http.ResponseWriter, r *http.Request) {
@@ -25,7 +26,13 @@ func (s *Salon) MainHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("template grid.gohtml not found"))
 		return
 	}
-	if err := tpl.Execute(w, struct{ Lab *Labyrinth }{Lab: lab}); err != nil {
+	if err := tpl.Execute(w, struct {
+		BaseAddr string
+		Lab      *Labyrinth
+	}{
+		BaseAddr: strings.TrimRight(s.addrExt, "/") + "/" + strings.Trim(s.pathPrefix, "/") + "/",
+		Lab:      lab,
+	}); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(fmt.Sprintf("%v", err)))
 		return

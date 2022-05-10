@@ -20,10 +20,13 @@ type Salon struct {
 	imageFS      fs.FS
 	log          *logging.Logger
 	templateDev  bool
+	pathPrefix   string
+	addrExt      string
 }
 
-func NewSalon(works map[string]*Work, staticFS, templateFS fs.FS, templateDev bool, imageFS fs.FS, log *logging.Logger) (*Salon, error) {
+func NewSalon(works map[string]*Work, addrExt string, staticFS, templateFS fs.FS, templateDev bool, imageFS fs.FS, log *logging.Logger) (*Salon, error) {
 	s := &Salon{
+		addrExt:      addrExt,
 		works:        works,
 		gridTemplate: map[string]*template.Template{},
 		templateFS:   templateFS,
@@ -55,6 +58,7 @@ func (s *Salon) initTemplates() (err error) {
 }
 
 func (s *Salon) SetRoutes(pathPrefix string, router *mux.Router) error {
+	s.pathPrefix = pathPrefix
 	router.PathPrefix("/img").Handler(http.StripPrefix(pathPrefix+"/img", http.FileServer(http.FS(s.imageFS)))).Methods("GET").Name("image server")
 	router.PathPrefix("/static").Handler(http.StripPrefix(pathPrefix+"/static", http.FileServer(http.FS(s.staticFS)))).Methods("GET").Name("static server")
 	router.HandleFunc("/", s.MainHandler).Methods("GET").Name("main")

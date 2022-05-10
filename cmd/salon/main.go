@@ -5,8 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"flag"
+	"fmt"
 	"github.com/blevesearch/bleve/v2"
+	"github.com/chromedp/chromedp"
 	"github.com/je4/PictureFS/v2/pkg/PictureFS"
+	"github.com/je4/bremote/v2/browser"
 	"github.com/je4/salon-digital/v2/pkg/bangbang"
 	"github.com/je4/salon-digital/v2/pkg/salon"
 	"github.com/je4/salon-digital/v2/pkg/server"
@@ -14,11 +17,13 @@ import (
 	"image"
 	"io"
 	"io/fs"
+	"io/ioutil"
 	"log"
 	"net/url"
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strings"
 	"syscall"
 	"time"
 )
@@ -26,8 +31,15 @@ import (
 func main() {
 	var err error
 
+	ex, err := os.Executable()
+	if err != nil {
+		panic(err)
+	}
+	exPath := filepath.Dir(ex)
+	fmt.Println(exPath)
+
 	var basedir = flag.String("basedir", ".", "base folder with html contents")
-	var configfile = flag.String("cfg", "/etc/salon-digital.toml", "configuration file")
+	var configfile = flag.String("cfg", filepath.Join(exPath, "salon-digital.toml"), "configuration file")
 
 	flag.Parse()
 
@@ -36,17 +48,23 @@ func main() {
 		LogLevel:   "DEBUG",
 		LogFormat:  `%{time:2006-01-02T15:04:05.000} %{module}::%{shortfunc} [%{shortfile}] > %{level:.5s} - %{message}`,
 		BaseDir:    *basedir,
-		Addr:       "localhost:80",
-		AddrExt:    "http://localhost:80/",
-		User:       "jane",
-		Password:   "doe",
-		BleveIndex: "",
+		DataDir:    exPath,
+		Addr:       "localhost:8088",
+		AddrExt:    "http://localhost:8088/",
+		User:       "",
+		Password:   "",
+		Browser:    true,
+		BleveIndex: filepath.Join(exPath, "bangbang.bleve"),
 		Salon: SalonConfig{
 			TemplateDev:    false,
 			TemplateDir:    "",
 			StaticDir:      "",
 			PictureFSImage: "",
 			PictureFSJSON:  "",
+		},
+		Bang: BangConfig{
+			TemplateDev: false,
+			TemplateDir: "",
 		},
 	}
 	if err := LoadSalonDigitalConfig(*configfile, config); err != nil {
@@ -79,7 +97,7 @@ func main() {
 	var staticFS, salonTemplateFS, bangTemplateFS fs.FS
 
 	if config.Salon.StaticDir == "" {
-		staticFS, err = fs.Sub(salon.StaticFS, "static")
+		staticFS, err = fs.Sub(salon.StaticFS, "embed/static")
 		if err != nil {
 			logger.Panicf("cannot get subtree of static: %v", err)
 		}
@@ -164,6 +182,7 @@ func main() {
 
 	salonDigital, err := salon.NewSalon(
 		works,
+		config.AddrExt,
 		staticFS,
 		salonTemplateFS,
 		config.Salon.TemplateDev,
@@ -231,6 +250,62 @@ func main() {
 		end <- true
 	}()
 
+	if config.Browser {
+		opts := map[string]interface{}{
+			"headless":                            false,
+			"start-fullscreen":                    true,
+			"disable-notifications":               true,
+			"disable-infobars":                    true,
+			"disable-gpu":                         false,
+			"allow-insecure-localhost":            true,
+			"enable-immersive-fullscreen-toolbar": true,
+			"views-browser-windows":               false,
+			"kiosk":                               true,
+			"disable-session-crashed-bubble":      true,
+			"incognito":                           true,
+			//				"enable-features":                     "PreloadMediaEngagementData,AutoplayIgnoreWebAudio,MediaEngagementBypassAutoplayPolicies",
+			"disable-features": "InfiniteSessionRestore,TranslateUI,PreloadMediaEngagementData,AutoplayIgnoreWebAudio,MediaEngagementBypassAutoplayPolicies",
+			//"no-first-run":                        true,
+			"enable-fullscreen-toolbar-reveal": false,
+			"useAutomationExtension":           false,
+			"enable-automation":                false,
+		}
+		browser, err := browser.NewBrowser(opts, logger, func(s string, i ...interface{}) {
+			//logger.Infof("Browser: %s - %v", s, i)
+		})
+		if err != nil {
+			logger.Panicf("cannot initialize browser: %v", err)
+		}
+		// ensure that the browser process is started
+		if err := browser.Run(); err != nil {
+			logger.Panicf("cannot run browser: %v", err)
+		}
+
+		path := filepath.Join(browser.TempDir, "DevToolsActivePort")
+		bs, err := ioutil.ReadFile(path)
+		if err != nil {
+			logger.Panicf("error reading DevToolsActivePort: %v", err)
+		}
+		//	lines := bytes.Split(bs, []byte("\n"))
+		logger.Debugf("DevToolsActivePort:\n%v", string(bs))
+		tasks := chromedp.Tasks{
+			chromedp.Navigate(fmt.Sprintf("%s/pano/", strings.TrimRight(config.AddrExt, "/"))),
+			//		browser.MouseClickXYAction(2,2),
+		}
+		err = browser.Tasks(tasks)
+		if err != nil {
+			logger.Errorf("could not navigate: %v", err)
+		}
+		go func() {
+			for {
+				time.Sleep(time.Second * 10)
+				if !browser.IsRunning() {
+					browser.Startup()
+					err = browser.Tasks(tasks)
+				}
+			}
+		}()
+	}
 	<-end
 	logger.Info("server stopped")
 

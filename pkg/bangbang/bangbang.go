@@ -17,7 +17,6 @@ import (
 	"net/http"
 	"net/url"
 	"path/filepath"
-	"strconv"
 	"strings"
 )
 
@@ -178,10 +177,6 @@ func (bb *BangBang) GetWorksSalon() (map[string]*salon.Work, error) {
 			return nil, emperror.Wrapf(err, "cannot get document #%s from index", src.Signature)
 		}
 		poster := src.GetPoster()
-		workid, err := strconv.ParseInt(src.GetSignatureOriginal(), 10, 64)
-		if err != nil {
-			return nil, emperror.Wrapf(err, "cannot convert original id %s of %f to int", src.GetSignatureOriginal(), src.GetSignature())
-		}
 		var work = &salon.Work{
 			Signature:   src.Signature,
 			Title:       src.Title,
@@ -191,9 +186,9 @@ func (bb *BangBang) GetWorksSalon() (map[string]*salon.Work, error) {
 		}
 		if poster != nil {
 			imagePath := fmt.Sprintf(
-				"%s/data/werke/%v/derivate/%s",
+				"%s/data/werke/%s/derivate/%s",
 				strings.TrimRight(bb.urlExt.String(), "/"),
-				workid,
+				src.GetSignatureOriginal(),
 				tplfunctions.MediaUrl(poster.Uri+"/resize/size1024x768/formatjpeg", "jpg"),
 			)
 			thumbPath := fmt.Sprintf(
@@ -293,7 +288,7 @@ func (bb *BangBang) GridHandler(w http.ResponseWriter, r *http.Request) {
 	if bb.dev {
 		bb.initTemplates()
 	}
-	tpl, ok := bb.templates["list.gohtml"]
+	tpl, ok := bb.templates["grid.gohtml"]
 	if !ok {
 		http.Error(w, "cannot find document.gohtml", http.StatusInternalServerError)
 		return

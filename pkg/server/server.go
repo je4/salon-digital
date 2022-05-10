@@ -23,18 +23,20 @@ type SubServer interface {
 }
 
 type Server struct {
-	service        string
-	host, port     string
-	name, password string
-	srv            *http.Server
-	linkTokenExp   time.Duration
-	jwtKey         string
-	jwtAlg         []string
-	log            *logging.Logger
-	urlExt         *url.URL
-	accessLog      io.Writer
-	subServer      map[string]SubServer
-	dataFS         fs.FS
+	service              string
+	host, port           string
+	name, password       string
+	srv                  *http.Server
+	linkTokenExp         time.Duration
+	jwtKey               string
+	jwtAlg               []string
+	log                  *logging.Logger
+	urlExt               *url.URL
+	accessLog            io.Writer
+	subServer            map[string]SubServer
+	dataFS               fs.FS
+	expectedUsernameHash [32]byte
+	expectedPasswordHash [32]byte
 }
 
 func NewServer(service, addr string, urlExt *url.URL, name, password string, dataFS fs.FS, log *logging.Logger, accessLog io.Writer) (*Server, error) {
@@ -50,26 +52,25 @@ func NewServer(service, addr string, urlExt *url.URL, name, password string, dat
 	*/
 
 	srv := &Server{
-		service:   service,
-		host:      host,
-		port:      port,
-		urlExt:    urlExt,
-		dataFS:    dataFS,
-		name:      name,
-		password:  password,
-		log:       log,
-		accessLog: accessLog,
-		subServer: map[string]SubServer{},
+		service:              service,
+		host:                 host,
+		port:                 port,
+		urlExt:               urlExt,
+		dataFS:               dataFS,
+		name:                 name,
+		password:             password,
+		expectedUsernameHash: sha256.Sum256([]byte(name)),
+		expectedPasswordHash: sha256.Sum256([]byte(password)),
+		log:                  log,
+		accessLog:            accessLog,
+		subServer:            map[string]SubServer{},
 	}
 
 	return srv, nil
 }
 
-var expectedUsernameHash = sha256.Sum256([]byte("bangbang"))
-var expectedPasswordHash = sha256.Sum256([]byte("2022"))
-
 //func basicAuth(next http.HandlerFunc) http.HandlerFunc {
-func basicAuth(h http.Handler) http.Handler {
+func (s *Server) basicAuth(h http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		// https://www.alexedwards.net/blog/basic-authentication-in-go
 		// License: MIT
@@ -91,8 +92,8 @@ func basicAuth(h http.Handler) http.Handler {
 			// Importantly, we should to do the work to evaluate both the
 			// username and password before checking the return values to
 			// avoid leaking information.
-			usernameMatch := subtle.ConstantTimeCompare(usernameHash[:], expectedUsernameHash[:]) == 1
-			passwordMatch := subtle.ConstantTimeCompare(passwordHash[:], expectedPasswordHash[:]) == 1
+			usernameMatch := subtle.ConstantTimeCompare(usernameHash[:], s.expectedUsernameHash[:]) == 1
+			passwordMatch := subtle.ConstantTimeCompare(passwordHash[:], s.expectedPasswordHash[:]) == 1
 
 			// If the username and password are correct, then call
 			// the next handler in the chain. Make sure to return
@@ -137,7 +138,13 @@ func (s *Server) ListenAndServe(cert, key string) (err error) {
 		s.log.Infof("Route %s: %s", route.GetName(), pathRegexp)
 		return nil
 	})
-	loggedRouter := handlers.CombinedLoggingHandler(s.accessLog, handlers.ProxyHeaders(basicAuth(router)))
+	var router2 http.Handler
+	if s.name == "" {
+		router2 = router
+	} else {
+		router2 = s.basicAuth(router)
+	}
+	loggedRouter := handlers.CombinedLoggingHandler(s.accessLog, handlers.ProxyHeaders(router2))
 	addr := net.JoinHostPort(s.host, s.port)
 	s.srv = &http.Server{
 		Handler: loggedRouter,

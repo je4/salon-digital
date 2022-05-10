@@ -209,216 +209,65 @@
                 </div>
             </div>
             <div class="col-4">
-                <div class="border rounded m-1">
-                    <h1 class="fw-light"> {{if (eq .Item.Source "zotero2-1624911")}}Performance Chronik Basel{{end}}<br />#{{.Item.SignatureOriginal}} <span style="font-weight: bold;">{{.Item.Title}}</span>, {{.Item.Date}}</h1>
+                <div class="border rounded m-1" style="padding-right: 10px;">
+                    <h1 class="fw-light"> {{if (eq .Item.Source "zotero2-1624911")}}Performance Chronik Basel<br />{{end}}</h1>
+                        Werknummer/Work ID: {{.Item.SignatureOriginal}}<br />
+                    <h1 class="fw-light">
+                        <span style="font-weight: bold;">{{.Item.Title}}</span>{{if (ne .Item.Date "")}}<br />
+                        ({{.Item.Date}}){{end}}</h1>
+                    <h2 style="margin-top: 20px;margin-bottom: 20px;">
+                    {{range $key, $p := .Item.Persons}}
+                        {{- if eq $p.Role "artist"}}
+                            {{- if gt $key 0}}; {{end}}{{$p.Name}}{{end}}{{end}}
+                    </h2>
+                    <h3>
                     {{range $p := .Item.Persons}}
-                        {{if eq $p.Role "artist"}}
-                            <h2><span style="font-weight: bold;">{{$p.Name}}</span></h2>
-                        {{end}}
+                        {{- if ne $p.Role "artist"}}
+                            {{$p.Name}} ({{camelcase (trimPrefix "performer:" $p.Role)}})<br />
+                        {{- end}}
                     {{end}}
-                    {{range $p := .Item.Persons}}
-                        {{if ne $p.Role "artist"}}
-                            <h2><span style="font-weight: bold;">{{$p.Name}}</span> ({{$p.Role}})</h2>
-                        {{end}}
-                    {{end}}
-
-                    {{/* Medium */}}
-                    <div class="">
-                        <strong class="d-inline-block mb-2 text-primary">Medium</strong>
-                        <p class="card-text mb-auto">
-                            {{index .Item.Meta "medium"}}<br />
-                            {{$metaIgnore = append $metaIgnore "medium"}}
-                            Alternative: {{index .Item.Meta "anderesformat"}}<br />
-                            {{$metaIgnore = append $metaIgnore "anderesformat"}}
-                            Dauer: {{index .Item.Meta "dauer"}}<br />
-                            {{$metaIgnore = append $metaIgnore "dauer"}}
-                        </p>
-                        <strong class="d-inline-block mb-2 text-primary">Digitale Medien</strong>
-                        <p class="card-text mb-auto">
-                            {{if gt (len .Item.Media) 0}}
-                                {{range $key, $medias := .Item.Media}}
-                                    {{with (eq $key "image")}}Bilder:{{end}}
-                                    {{with (eq $key "video")}}Videos:{{end}}
-                                    {{with (eq $key "audio")}}Audio:{{end}}
-                                    {{with (eq $key "pdf")}}PDF:{{end}}
-                                    {{with (eq $key "default")}}Unbekannt:{{end}} {{len $medias}}<br />
-                                {{end}}
-                            {{else}}
-                                keine zur Verfügung gestellt
-                            {{end}}
-                        </p>
+                    </h3>
+                    <div style="text-align: justify;margin-bottom: 10px; font-size: larger;">
+                        {{.Item.Abstract}}
                     </div>
+                    {{range $note := .Item.Notes}}
+                        <div style="font-weight: bold;">{{$note.Title}}</div>
+                        <div style="text-align: justify;">{{$note.Note}}</div>
+                    {{end}}
+                    {{if ne (index .Item.Meta "anderesformat") ""}}<div style="font-weight: bold;">Alternative</div>
+                    <div style="text-align: justify;">{{index .Item.Meta "anderesformat"}}</div>
+                    {{$metaIgnore = append $metaIgnore "anderesformat"}}{{end}}
 
                     {{/* Event */}}
-                    <div class="">
-                        <strong class="d-inline-block mb-2 text-primary">Event</strong>
-                        <h3 class="mb-0">{{index .Item.Meta "festival"}}</h3>
-                        {{$metaIgnore = append $metaIgnore "festival"}}
+                    <div style="margin-top: 20px;">
+                        {{if ne (index .Item.Meta "festival") ""}}<h4>{{index .Item.Meta "festival"}}</h4>
+                        {{$metaIgnore = append $metaIgnore "festival"}}{{end}}
                         <p class="card-text mb-auto">
-                            Ort: {{index .Item.Meta "eventplace"}}<br />
-                            {{$metaIgnore = append $metaIgnore "eventplace"}}
-                            KuratorIn: {{index .Item.Meta "eventcurator"}}<br />
-                            {{$metaIgnore = append $metaIgnore "eventcurator"}}
-                            Dokumentationstyp: {{index .Item.Meta "doctype"}}<br />
-                            {{$metaIgnore = append $metaIgnore "doctype"}}
+                            {{if ne (index .Item.Meta "eventplace") ""}}Ort: {{index .Item.Meta "eventplace"}}<br />
+                            {{$metaIgnore = append $metaIgnore "eventplace"}}{{end}}
+                            {{if ne (index .Item.Meta "eventcurator") ""}}KuratorIn: {{index .Item.Meta "eventcurator"}}<br />
+                            {{$metaIgnore = append $metaIgnore "eventcurator"}}{{end}}
+                            {{if ne (index .Item.Meta "doctype") ""}}Dokumentationstyp: {{index .Item.Meta "doctype"}}<br />
+                            {{$metaIgnore = append $metaIgnore "doctype"}}{{end}}
                         </p>
                     </div>
+                    {{/* Medium */}}
+                    {{if (ne .Item.Source "zotero2-1624911")}}<div style="font-weight: bold; margin-top: 10px;">Medium</div>
+                    <p class="card-text mb-auto">
+                        {{index .Item.Meta "medium"}}<br />
+                        {{$metaIgnore = append $metaIgnore "medium"}}
+                        {{if ne (index .Item.Meta "dauer") ""}}Dauer: {{index .Item.Meta "dauer"}}<br />
+                        {{$metaIgnore = append $metaIgnore "dauer"}}{{end}}
+                    </p>
+                    {{end}}
 
                 </div>
             </div>
-<!--
-            <div class="col-lg-10 col-md-12 mx-auto">
-                <h1 class="fw-light"> {{if (eq .Item.Source "zotero2-1624911")}}Performance Chronik Basel{{end}}<br />#{{.Item.SignatureOriginal}} <span style="font-weight: bold;">{{.Item.Title}}</span>, {{.Item.Date}}</h1>
-                {{range $p := .Item.Persons}}
-                    <h2>{{$p.Role}}: <span style="font-weight: bold;">{{$p.Name}}</span></h2>
-                {{end}}
-                <p class="lead">
-                    {{index .Item.Meta "descr"}}
-                    {{$metaIgnore = append $metaIgnore "descr"}}
-                </p>
-            </div>
--->
         </div>
     </section>
-
-    <div class="album py-5 bg-light">
-        <div class="container-fluid">
-
-            <div class="row mb-2">
-                {{/* Medium */}}
-                <div class="col-md-6">
-                    <div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
-                        <div class="col p-4 d-flex flex-column position-static">
-                            <strong class="d-inline-block mb-2 text-primary">Medium</strong>
-                            <p class="card-text mb-auto">
-                                {{index .Item.Meta "medium"}}<br />
-                                {{$metaIgnore = append $metaIgnore "medium"}}
-                                Alternative: {{index .Item.Meta "anderesformat"}}<br />
-                                {{$metaIgnore = append $metaIgnore "anderesformat"}}
-                                Dauer: {{index .Item.Meta "dauer"}}<br />
-                                {{$metaIgnore = append $metaIgnore "dauer"}}
-                            </p>
-                            <strong class="d-inline-block mb-2 text-primary">Digitale Medien</strong>
-                            <p class="card-text mb-auto">
-                                {{if gt (len .Item.Media) 0}}
-                                    {{range $key, $medias := .Item.Media}}
-                                        {{with (eq $key "image")}}Bilder:{{end}}
-                                        {{with (eq $key "video")}}Videos:{{end}}
-                                        {{with (eq $key "audio")}}Audio:{{end}}
-                                        {{with (eq $key "pdf")}}PDF:{{end}}
-                                        {{with (eq $key "default")}}Unbekannt:{{end}} {{len $medias}}<br />
-                                    {{end}}
-                                {{else}}
-                                    keine zur Verfügung gestellt
-                                {{end}}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                {{/* Event */}}
-                <div class="col-md-6">
-                    <div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
-                        <div class="col p-4 d-flex flex-column position-static">
-                            <strong class="d-inline-block mb-2 text-primary">Event</strong>
-                            <h3 class="mb-0">{{index .Item.Meta "festival"}}</h3>
-                            {{$metaIgnore = append $metaIgnore "festival"}}
-                            <p class="card-text mb-auto">
-                                Ort: {{index .Item.Meta "eventplace"}}<br />
-                                {{$metaIgnore = append $metaIgnore "eventplace"}}
-                                KuratorIn: {{index .Item.Meta "eventcurator"}}<br />
-                                {{$metaIgnore = append $metaIgnore "eventcurator"}}
-                                Dokumentationstyp: {{index .Item.Meta "doctype"}}<br />
-                                {{$metaIgnore = append $metaIgnore "doctype"}}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row mb-2">
-                {{/* Kontakt */}}
-                <div class="col-md-6">
-                    <div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
-                        <div class="col p-4 d-flex flex-column position-static">
-                            <strong class="d-inline-block mb-2 text-primary">Kontakt</strong>
-                            <h3 class="mb-0">{{index .Item.Meta "vorname"}} {{index .Item.Meta "nachname"}}</h3>
-                            {{$metaIgnore = append $metaIgnore "vorname"}}
-                            {{$metaIgnore = append $metaIgnore "nachname"}}
-                            <p class="card-text mb-auto">
-                                {{index .Item.Meta "adresse"}}<br />
-                                {{$metaIgnore = append $metaIgnore "adresse"}}
-                                Telefon: {{index .Item.Meta "tel"}}<br />
-                                {{$metaIgnore = append $metaIgnore "tel"}}
-                                Email: <a href="mailto:{{index .Item.Meta "email"}}">{{index .Item.Meta "email"}}</a><br />
-                                {{$metaIgnore = append $metaIgnore "email"}}
-                                Web: <a href="{{correctWeb (index .Item.Meta "web")}}" target="_blank">{{index .Item.Meta "web"}}</a><br />
-                                {{$metaIgnore = append $metaIgnore "web"}}
-                                Jahrgang: {{index .Item.Meta "jahrgang"}}<br />
-                                {{$metaIgnore = append $metaIgnore "jahrgang"}}
-                                Funktion: {{index .Item.Meta "function"}}<br />
-                                {{$metaIgnore = append $metaIgnore "function"}}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                {{/* Rechte */}}
-                <div class="col-md-6">
-                    <div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
-                        <div class="col p-4 d-flex flex-column position-static">
-                            <strong class="d-inline-block mb-2 text-primary">Rechte</strong>
-                            <p class="card-text mb-auto">
-                                Bang Bang: {{index .Item.Meta "rechtebangbang"}}<br />
-                                {{$metaIgnore = append $metaIgnore "rechtebangbang"}}
-                                Mediathek: {{index .Item.Meta "rechtemediathek"}}<br />
-                                {{$metaIgnore = append $metaIgnore "rechtemediathek"}}
-                            </p>
-                            {{if gt (len (index .Item.Meta "remark")) 0}}
-                                <strong class="d-inline-block mb-2 text-primary">Bemerkung</strong>
-                                <p class="card-text mb-auto">
-                                    {{index .Item.Meta "remark"}}<br />
-                                </p>
-                            {{end}}
-                            {{$metaIgnore = append $metaIgnore "remark"}}
-                            {{if gt (len (index .Item.Meta "additional")) 0}}
-                                <strong class="d-inline-block mb-2 text-primary">Zusatz</strong>
-                                <p class="card-text mb-auto">
-                                    Ort: {{index .Item.Meta "additional"}}<br />
-                                </p>
-                            {{end}}
-                            {{$metaIgnore = append $metaIgnore "additional"}}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {{if (gt (len .Item.Meta) (len $metaIgnore))}}
-                <table class="table table-striped">
-                    <thead>
-                    <tr>
-                        <th scope="col">Key</th>
-                        <th scope="col">Value</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {{range $key, $val := .Item.Meta}}
-                        {{if not (has $key $metaIgnore)}}
-                            <tr>
-                                <th scope="row">{{$key}}</th>
-                                <th>{{$val}}</th>
-                            </tr>
-                        {{end}}
-                    {{end}}
-                    </tbody>
-                </table>
-            {{end}}
-
-
-        </div>
-
 </main>
 
+{{/*
 <footer class="text-muted py-5">
     <div class="container">
         <p class="float-end mb-1">
@@ -427,7 +276,7 @@
         <p class="mb-1">Provided by <a href="https://mediathek.hgk.fhnw.ch">Mediathek HGK FHNW</a> and <a href="juergen@info-age.ch">info-age GmbH, Basel</a></p>
     </div>
 </footer>
-
+*/}}
 
 <script src="{{$data.DataDir}}bootstrap/js/bootstrap.bundle.js"></script>
 <script src="{{$data.DataDir}}video-js/js/video.min.js"></script>
