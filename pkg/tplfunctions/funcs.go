@@ -10,7 +10,7 @@ import (
 )
 
 // https://github.com/Masterminds/sprig/blob/master/strings.go
-func strval(v interface{}) string {
+func strval(v any) string {
 	switch v := v.(type) {
 	case string:
 		return v
@@ -26,11 +26,11 @@ func strval(v interface{}) string {
 }
 
 // https://github.com/Masterminds/sprig/blob/master/strings.go
-func strslice(v interface{}) []string {
+func strslice(v any) []string {
 	switch v := v.(type) {
 	case []string:
 		return v
-	case []interface{}:
+	case []any:
 		b := make([]string, 0, len(v))
 		for _, s := range v {
 			if s != nil {
@@ -61,7 +61,7 @@ func strslice(v interface{}) []string {
 	}
 }
 
-func joinSingle(sep string, v interface{}) (result string) {
+func joinSingle(sep string, v any) (result string) {
 	strs := strslice(v)
 
 	if len(strs) < 1 {
@@ -81,6 +81,20 @@ func iterate(count int) []int {
 		Items = append(Items, i)
 	}
 	return Items
+}
+
+func fillStr(str string, filler string, l int) string {
+	if len(str) >= l {
+		return str
+	}
+	for {
+		str = filler + str
+		if len(str) >= l {
+			break
+		}
+	}
+	rs := []rune(str)
+	return string(rs[len(rs)-l:])
 }
 
 var mediaserverRegexp = regexp.MustCompile("^mediaserver:([^/]+)/([^/]+)/(.+)$")
@@ -122,6 +136,7 @@ var funcMap = map[string]any{
 		}
 		return "https://" + u
 	},
+	"fillStr": fillStr,
 }
 
 func GetFuncMap() template.FuncMap {

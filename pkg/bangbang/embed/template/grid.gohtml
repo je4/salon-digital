@@ -9,6 +9,7 @@
 
     <!-- Bootstrap core CSS -->
     <link href="{{$data.DataDir}}bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{$data.DataDir}}bootstrap/css/bootstrap-icons.css" rel="stylesheet">
     <link href="{{$data.DataDir}}datatables/css/dataTables.bootstrap5.min.css" rel="stylesheet">
 
 
@@ -58,26 +59,26 @@
             <ul class="nav nav-pills flex-column mb-auto">
                 <li class="nav-item">
                     <a href="{{$data.GridUrl}}" class="nav-link bg-secondary active" aria-current="page">
-                        <svg class="bi me-2" width="16" height="16"><use xlink:href="#home"></use></svg>
+                        <i class="bi bi-grid-3x3-gap-fill"></i>
                         Grid
                     </a>
                 </li>
                 <li>
                     <a href="{{$data.ListUrl}}" class="nav-link text-white">
-                        <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"></use></svg>
+                        <i class="bi bi-list-ul"></i>
                         Liste
                     </a>
                 </li>
                 <li>
-                    <a href="{{$data.SalonUrl}}" class="nav-link text-white">
-                        <svg class="bi me-2" width="16" height="16"><use xlink:href="#table"></use></svg>
-                        Salon Digital
+                    <a href="{{$data.PanoUrl}}" class="nav-link text-white">
+                        <i class="bi bi-grid-3x3"></i>
+                        Digitale See
                     </a>
                 </li>
                 <li>
-                    <a href="{{$data.PanoUrl}}" class="nav-link text-white">
-                        <svg class="bi me-2" width="16" height="16"><use xlink:href="#grid"></use></svg>
-                        Panorama
+                    <a href="{{$data.SalonUrl}}" class="nav-link text-white">
+                        <img style="width:17px; padding-bottom: 3px;" src="{{list $data.DataDir "img" "sdmllogo.png" | joinSingle "/"}}">
+                        Salon Digital
                     </a>
                 </li>
             </ul>

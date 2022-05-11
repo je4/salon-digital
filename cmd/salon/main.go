@@ -7,23 +7,20 @@ import (
 	"flag"
 	"fmt"
 	"github.com/blevesearch/bleve/v2"
-	"github.com/chromedp/chromedp"
 	"github.com/je4/PictureFS/v2/pkg/PictureFS"
-	"github.com/je4/bremote/v2/browser"
 	"github.com/je4/salon-digital/v2/pkg/bangbang"
+	"github.com/je4/salon-digital/v2/pkg/browserControl"
 	"github.com/je4/salon-digital/v2/pkg/salon"
 	"github.com/je4/salon-digital/v2/pkg/server"
 	lm "github.com/je4/utils/v2/pkg/logger"
 	"image"
 	"io"
 	"io/fs"
-	"io/ioutil"
 	"log"
 	"net/url"
 	"os"
 	"os/signal"
 	"path/filepath"
-	"strings"
 	"syscall"
 	"time"
 )
@@ -218,13 +215,49 @@ func main() {
 	bbs := &bangbang.BBSalon{BangBang: bb}
 	srv.AddSubServer("/salon", bbs)
 	bbz := &bangbang.BBZoom{BangBang: bb}
-	srv.AddSubServer("/pano", bbz)
+	srv.AddSubServer("/digitale-see", bbz)
 
 	go func() {
 		if err := srv.ListenAndServe(config.CertPem, config.KeyPem); err != nil {
 			log.Fatalf("server died: %v", err)
 		}
 	}()
+
+	var b *browserControl.BrowserControl
+
+	if config.Browser {
+		opts := map[string]any{
+			"headless":                            false,
+			"start-fullscreen":                    true,
+			"disable-notifications":               true,
+			"disable-infobars":                    true,
+			"disable-gpu":                         false,
+			"disable-audio-output":                false,
+			"mute-audio":                          false,
+			"allow-insecure-localhost":            true,
+			"enable-immersive-fullscreen-toolbar": true,
+			"views-browser-windows":               false,
+			"kiosk":                               true,
+			"disable-session-crashed-bubble":      true,
+			"incognito":                           true,
+			//				"enable-features":                     "PreloadMediaEngagementData,AutoplayIgnoreWebAudio,MediaEngagementBypassAutoplayPolicies",
+			//			"disable-features": "InfiniteSessionRestore,TranslateUI,PreloadMediaEngagementData,AutoplayIgnoreWebAudio,MediaEngagementBypassAutoplayPolicies",
+			"disable-features": "InfiniteSessionRestore,TranslateUI,PreloadMediaEngagementData,AutoplayIgnoreWebAudio,MediaEngagementBypassAutoplayPolicies",
+			//"no-first-run":                        true,
+			"enable-fullscreen-toolbar-reveal": false,
+			"useAutomationExtension":           false,
+			"enable-automation":                false,
+		}
+		homeUrl, err := url.Parse(config.BrowserURL)
+		if err != nil {
+			logger.Panicf("cannot parse %s: %v", config.AddrExt, err)
+		}
+		b, err = browserControl.NewBrowserControl(homeUrl, opts, config.BrowserTimeout.Duration, logger)
+		if err != nil {
+			logger.Panicf("cannot create browser control: %v", err)
+		}
+		b.Start()
+	}
 
 	end := make(chan bool, 1)
 
@@ -240,6 +273,10 @@ func main() {
 
 		<-sigint
 
+		if config.Browser && b != nil {
+			b.Shutdown()
+		}
+
 		// We received an interrupt signal, shut down.
 		logger.Infof("shutdown requested")
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -250,62 +287,6 @@ func main() {
 		end <- true
 	}()
 
-	if config.Browser {
-		opts := map[string]interface{}{
-			"headless":                            false,
-			"start-fullscreen":                    true,
-			"disable-notifications":               true,
-			"disable-infobars":                    true,
-			"disable-gpu":                         false,
-			"allow-insecure-localhost":            true,
-			"enable-immersive-fullscreen-toolbar": true,
-			"views-browser-windows":               false,
-			"kiosk":                               true,
-			"disable-session-crashed-bubble":      true,
-			"incognito":                           true,
-			//				"enable-features":                     "PreloadMediaEngagementData,AutoplayIgnoreWebAudio,MediaEngagementBypassAutoplayPolicies",
-			"disable-features": "InfiniteSessionRestore,TranslateUI,PreloadMediaEngagementData,AutoplayIgnoreWebAudio,MediaEngagementBypassAutoplayPolicies",
-			//"no-first-run":                        true,
-			"enable-fullscreen-toolbar-reveal": false,
-			"useAutomationExtension":           false,
-			"enable-automation":                false,
-		}
-		browser, err := browser.NewBrowser(opts, logger, func(s string, i ...interface{}) {
-			//logger.Infof("Browser: %s - %v", s, i)
-		})
-		if err != nil {
-			logger.Panicf("cannot initialize browser: %v", err)
-		}
-		// ensure that the browser process is started
-		if err := browser.Run(); err != nil {
-			logger.Panicf("cannot run browser: %v", err)
-		}
-
-		path := filepath.Join(browser.TempDir, "DevToolsActivePort")
-		bs, err := ioutil.ReadFile(path)
-		if err != nil {
-			logger.Panicf("error reading DevToolsActivePort: %v", err)
-		}
-		//	lines := bytes.Split(bs, []byte("\n"))
-		logger.Debugf("DevToolsActivePort:\n%v", string(bs))
-		tasks := chromedp.Tasks{
-			chromedp.Navigate(fmt.Sprintf("%s/pano/", strings.TrimRight(config.AddrExt, "/"))),
-			//		browser.MouseClickXYAction(2,2),
-		}
-		err = browser.Tasks(tasks)
-		if err != nil {
-			logger.Errorf("could not navigate: %v", err)
-		}
-		go func() {
-			for {
-				time.Sleep(time.Second * 10)
-				if !browser.IsRunning() {
-					browser.Startup()
-					err = browser.Tasks(tasks)
-				}
-			}
-		}()
-	}
 	<-end
 	logger.Info("server stopped")
 

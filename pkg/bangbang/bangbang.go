@@ -29,6 +29,10 @@ type BangBang struct {
 	collagePos map[string][]image.Rectangle
 	templates  map[string]*template.Template
 	templateFS fs.FS
+	panoUrl    *url.URL
+	salonUrl   *url.URL
+	listUrl    *url.URL
+	gridUrl    *url.URL
 }
 
 func NewBangBang(index bleve.Index, urlExt *url.URL, dataUrl *url.URL, collagePos map[string][]image.Rectangle, templateFS fs.FS, logger *logging.Logger, dev bool) (*BangBang, error) {
@@ -42,6 +46,24 @@ func NewBangBang(index bleve.Index, urlExt *url.URL, dataUrl *url.URL, collagePo
 		templateFS: templateFS,
 		templates:  map[string]*template.Template{},
 	}
+	var err error
+	b.salonUrl, err = b.urlExt.Parse("/salon/")
+	if err != nil {
+		return nil, emperror.Wrapf(err, "cannot parse url %s -> %s", b.urlExt.String(), "/salon")
+	}
+	b.listUrl, err = b.urlExt.Parse("/list/")
+	if err != nil {
+		return nil, emperror.Wrapf(err, "cannot parse url %s -> %s", b.urlExt.String(), "/list")
+	}
+	b.gridUrl, err = b.urlExt.Parse("/grid/")
+	if err != nil {
+		return nil, emperror.Wrapf(err, "cannot parse url %s -> %s", b.urlExt.String(), "/grid")
+	}
+	b.panoUrl, err = b.urlExt.Parse("/digitale-see/")
+	if err != nil {
+		return nil, emperror.Wrapf(err, "cannot parse url %s -> %s", b.urlExt.String(), "/pano")
+	}
+
 	return b, b.initTemplates()
 }
 
@@ -240,26 +262,6 @@ func (bb *BangBang) ListHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("cannot get works: %v", err), http.StatusInternalServerError)
 		return
 	}
-	salonUrl, err := bb.urlExt.Parse("/salon/")
-	if err != nil {
-		http.Error(w, fmt.Sprintf("cannot parse url %s -> %s", bb.urlExt.String(), "/salon"), http.StatusInternalServerError)
-		return
-	}
-	listUrl, err := bb.urlExt.Parse("/list/")
-	if err != nil {
-		http.Error(w, fmt.Sprintf("cannot parse url %s -> %s", bb.urlExt.String(), "/list"), http.StatusInternalServerError)
-		return
-	}
-	gridUrl, err := bb.urlExt.Parse("/grid/")
-	if err != nil {
-		http.Error(w, fmt.Sprintf("cannot parse url %s -> %s", bb.urlExt.String(), "/grid"), http.StatusInternalServerError)
-		return
-	}
-	panoUrl, err := bb.urlExt.Parse("/pano/")
-	if err != nil {
-		http.Error(w, fmt.Sprintf("cannot parse url %s -> %s", bb.urlExt.String(), "/pano"), http.StatusInternalServerError)
-		return
-	}
 	data := struct {
 		Items    []*search.SourceData
 		DataDir  string
@@ -270,10 +272,10 @@ func (bb *BangBang) ListHandler(w http.ResponseWriter, r *http.Request) {
 	}{
 		Items:    works,
 		DataDir:  bb.dataUrl.String(),
-		SalonUrl: salonUrl.String(),
-		ListUrl:  listUrl.String(),
-		GridUrl:  gridUrl.String(),
-		PanoUrl:  panoUrl.String(),
+		SalonUrl: bb.salonUrl.String(),
+		ListUrl:  bb.listUrl.String(),
+		GridUrl:  bb.gridUrl.String(),
+		PanoUrl:  bb.panoUrl.String(),
 	}
 
 	if err := tpl.Execute(w, data); err != nil {
@@ -299,26 +301,6 @@ func (bb *BangBang) GridHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("cannot get works: %v", err), http.StatusInternalServerError)
 		return
 	}
-	salonUrl, err := bb.urlExt.Parse("/salon/")
-	if err != nil {
-		http.Error(w, fmt.Sprintf("cannot parse url %s -> %s", bb.urlExt.String(), "/salon"), http.StatusInternalServerError)
-		return
-	}
-	listUrl, err := bb.urlExt.Parse("/list/")
-	if err != nil {
-		http.Error(w, fmt.Sprintf("cannot parse url %s -> %s", bb.urlExt.String(), "/list"), http.StatusInternalServerError)
-		return
-	}
-	gridUrl, err := bb.urlExt.Parse("/grid/")
-	if err != nil {
-		http.Error(w, fmt.Sprintf("cannot parse url %s -> %s", bb.urlExt.String(), "/grid"), http.StatusInternalServerError)
-		return
-	}
-	panoUrl, err := bb.urlExt.Parse("/pano/")
-	if err != nil {
-		http.Error(w, fmt.Sprintf("cannot parse url %s -> %s", bb.urlExt.String(), "/pano"), http.StatusInternalServerError)
-		return
-	}
 	data := struct {
 		Items    []*search.SourceData
 		DataDir  string
@@ -329,10 +311,10 @@ func (bb *BangBang) GridHandler(w http.ResponseWriter, r *http.Request) {
 	}{
 		Items:    works,
 		DataDir:  bb.dataUrl.String(),
-		SalonUrl: salonUrl.String(),
-		ListUrl:  listUrl.String(),
-		GridUrl:  gridUrl.String(),
-		PanoUrl:  panoUrl.String(),
+		SalonUrl: bb.salonUrl.String(),
+		ListUrl:  bb.listUrl.String(),
+		GridUrl:  bb.gridUrl.String(),
+		PanoUrl:  bb.panoUrl.String(),
 	}
 
 	if err := tpl.Execute(w, data); err != nil {
@@ -352,26 +334,6 @@ func (bb *BangBang) SalonHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "cannot find document.gohtml", http.StatusInternalServerError)
 		return
 	}
-	salonUrl, err := bb.urlExt.Parse("/salon/")
-	if err != nil {
-		http.Error(w, fmt.Sprintf("cannot parse url %s -> %s", bb.urlExt.String(), "/salon"), http.StatusInternalServerError)
-		return
-	}
-	listUrl, err := bb.urlExt.Parse("/list/")
-	if err != nil {
-		http.Error(w, fmt.Sprintf("cannot parse url %s -> %s", bb.urlExt.String(), "/list"), http.StatusInternalServerError)
-		return
-	}
-	gridUrl, err := bb.urlExt.Parse("/grid/")
-	if err != nil {
-		http.Error(w, fmt.Sprintf("cannot parse url %s -> %s", bb.urlExt.String(), "/grid"), http.StatusInternalServerError)
-		return
-	}
-	panoUrl, err := bb.urlExt.Parse("/pano/")
-	if err != nil {
-		http.Error(w, fmt.Sprintf("cannot parse url %s -> %s", bb.urlExt.String(), "/pano"), http.StatusInternalServerError)
-		return
-	}
 	data := struct {
 		DataDir  string
 		PanoUrl  string
@@ -379,11 +341,11 @@ func (bb *BangBang) SalonHandler(w http.ResponseWriter, r *http.Request) {
 		ListUrl  string
 		GridUrl  string
 	}{
-		SalonUrl: salonUrl.String(),
-		ListUrl:  listUrl.String(),
-		GridUrl:  gridUrl.String(),
+		SalonUrl: bb.salonUrl.String(),
+		ListUrl:  bb.listUrl.String(),
+		GridUrl:  bb.gridUrl.String(),
 		DataDir:  bb.dataUrl.String(),
-		PanoUrl:  panoUrl.String(),
+		PanoUrl:  bb.panoUrl.String(),
 	}
 	if err := tpl.Execute(w, data); err != nil {
 		bb.logger.Errorf("cannot execute template: %v", err)
@@ -402,26 +364,6 @@ func (bb *BangBang) ZoomHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "cannot find zoom.gohtml", http.StatusInternalServerError)
 		return
 	}
-	salonUrl, err := bb.urlExt.Parse("/salon/")
-	if err != nil {
-		http.Error(w, fmt.Sprintf("cannot parse url %s -> %s", bb.urlExt.String(), "/salon"), http.StatusInternalServerError)
-		return
-	}
-	listUrl, err := bb.urlExt.Parse("/list/")
-	if err != nil {
-		http.Error(w, fmt.Sprintf("cannot parse url %s -> %s", bb.urlExt.String(), "/list"), http.StatusInternalServerError)
-		return
-	}
-	gridUrl, err := bb.urlExt.Parse("/grid/")
-	if err != nil {
-		http.Error(w, fmt.Sprintf("cannot parse url %s -> %s", bb.urlExt.String(), "/grid"), http.StatusInternalServerError)
-		return
-	}
-	panoUrl, err := bb.urlExt.Parse("/pano/")
-	if err != nil {
-		http.Error(w, fmt.Sprintf("cannot parse url %s -> %s", bb.urlExt.String(), "/pano"), http.StatusInternalServerError)
-		return
-	}
 	data := struct {
 		DataDir  string
 		PanoUrl  string
@@ -429,11 +371,11 @@ func (bb *BangBang) ZoomHandler(w http.ResponseWriter, r *http.Request) {
 		ListUrl  string
 		GridUrl  string
 	}{
-		SalonUrl: salonUrl.String(),
-		ListUrl:  listUrl.String(),
-		GridUrl:  gridUrl.String(),
+		SalonUrl: bb.salonUrl.String(),
+		ListUrl:  bb.listUrl.String(),
+		GridUrl:  bb.gridUrl.String(),
 		DataDir:  bb.dataUrl.String(),
-		PanoUrl:  panoUrl.String(),
+		PanoUrl:  bb.panoUrl.String(),
 	}
 	if err := tpl.Execute(w, data); err != nil {
 		bb.logger.Errorf("cannot execute template: %v", err)

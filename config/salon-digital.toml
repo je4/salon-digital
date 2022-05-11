@@ -4,8 +4,10 @@
 #addr = "localhost:84"
 #addrext = "https://localhost/"
 browser = false
-user = "bangbang"
-password = "2022"
+browserTimeout = "30s"
+browserURL = "http://localhost:8088/pano/"
+user = ""
+password = ""
 datadir = "c:/temp/bangbang"
 bleveindex = "c:/temp/bangbang/bangbang.bleve"
 [salon]
