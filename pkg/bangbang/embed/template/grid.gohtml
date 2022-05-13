@@ -38,14 +38,14 @@
     <div class="modal fade" id="documentModal" tabindex="-1" aria-labelledby="documentLabel" aria-hidden="true">
         <div class="modal-dialog modal-fullscreen">
             <div class="modal-content bg-dark">
-                <div class="modal-header bg-dark text-light">
+                <div class="modal-header bg-dark text-light" data-bs-dismiss="modal">
                     <h5 class="modal-title bg-dark" id="documentLabel">New message</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <iframe style="width: 100%;height: 97%;" src=""></iframe>
                 </div>
-                <div class="modal-footer bg-dark">
+                <div class="modal-footer bg-dark" data-bs-dismiss="modal">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
@@ -84,12 +84,12 @@
             </ul>
         </div>
 
-        <div class="col-md-10 bg-dark" style="margin: 0; padding: 0;">
+        <div class="col-md-10" style="background-color: #979797; margin: 0; padding-top: 10px;">
 
             <div class="row g-3 overflow-auto" style="height: calc(100vh - 60px);">
                 {{range $item := .Items}}
                     <div class="col" style="max-width: 300px;">
-                        <div class="card shadow-sm"
+                        <div class="card border-dark bg-dark text-white h-100"
                              data-bs-toggle="modal"
                              data-bs-target="#documentModal"
                              data-bs-documenturl="../document/{{$item.Signature}}"
@@ -139,24 +139,34 @@
 
 <script src="{{list $data.DataDir "bootstrap/js/bootstrap.bundle.js" | joinSingle "/"}}"></script>
 <script>
-    var documentModal = document.getElementById('documentModal')
+    let documentModal = document.getElementById('documentModal')
+    let modalTitle = documentModal.querySelector('.modal-title')
+    let modalBodyIFrame = documentModal.querySelector('.modal-body iframe')
     documentModal.addEventListener('show.bs.modal', function (event) {
         // Button that triggered the modal
-        var button = event.relatedTarget
+        let button = event.relatedTarget
         // Extract info from data-bs-* attributes
-        var documentUrl = button.getAttribute('data-bs-documenturl')
-        var imageTitle = button.getAttribute('data-bs-documenttitle')
+        let documentUrl = button.getAttribute('data-bs-documenturl')
+        let imageTitle = button.getAttribute('data-bs-documenttitle')
 
         // If necessary, you could initiate an AJAX request here
         // and then do the updating in a callback.
         //
         // Update the modal's content.
-        var modalTitle = documentModal.querySelector('.modal-title')
-        var modalBodyIFrame = documentModal.querySelector('.modal-body iframe')
 
         modalTitle.textContent = imageTitle
         modalBodyIFrame.src = documentUrl
     })
+    /*
+    documentModal.onclick = function () {
+        documentModal.style.display = "none";
+        modalBodyIFrame.src = ""
+    }
+    */
+    documentModalElem.addEventListener('hidden.bs.modal', function (event) {
+        modalBodyIFrame.src = ""
+    })
+
 </script>
 </body>
 </html>

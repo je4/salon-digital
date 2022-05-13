@@ -249,6 +249,10 @@
 
     function move(x, y) {
         let half = (lab.Size-1)/2;
+        if( x == half && y == half ) {
+            btn.click()
+            return
+        }
         let dirStr = getDirection(x, y);
         switch( dirStr ) {
             case "north":

@@ -252,7 +252,7 @@ func main() {
 		if err != nil {
 			logger.Panicf("cannot parse %s: %v", config.AddrExt, err)
 		}
-		b, err = browserControl.NewBrowserControl(homeUrl, opts, config.BrowserTimeout.Duration, logger)
+		b, err = browserControl.NewBrowserControl(config.AddrExt, homeUrl, opts, config.BrowserTimeout.Duration, logger)
 		if err != nil {
 			logger.Panicf("cannot create browser control: %v", err)
 		}

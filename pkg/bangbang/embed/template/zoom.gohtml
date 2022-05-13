@@ -38,14 +38,14 @@
     <div class="modal fade" id="documentModal" tabindex="-1" aria-labelledby="documentLabel" aria-hidden="true">
         <div class="modal-dialog modal-fullscreen">
             <div class="modal-content bg-dark">
-                <div class="modal-header bg-dark text-light">
+                <div class="modal-header bg-dark text-light" data-bs-dismiss="modal">
                     <h5 class="modal-title bg-dark" id="documentLabel">New message</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <iframe style="width: 100%;height: 97%;" src=""></iframe>
                 </div>
-                <div class="modal-footer bg-dark">
+                <div class="modal-footer bg-dark" data-bs-dismiss="modal">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
@@ -107,20 +107,25 @@
 
     var documentModal = new bootstrap.Modal(document.getElementById('documentModal'), null)
     var documentModalElem = document.getElementById('documentModal')
+    var modalTitle = document.getElementById('documentModal').querySelector('.modal-title')
+    var modalBodyIFrame = document.getElementById('documentModal').querySelector('.modal-body iframe')
     documentModalElem.addEventListener('show.bs.modal', function (event) {
        // If necessary, you could initiate an AJAX request here
        // and then do the updating in a callback.
        //
        // Update the modal's content.
-       var modalTitle = documentModalElem = document.getElementById('documentModal')
-            .querySelector('.modal-title')
-       var modalBodyIFrame = documentModalElem = document.getElementById('documentModal')
-            .querySelector('.modal-body iframe')
 
        modalTitle.textContent = documenttitle
        modalBodyIFrame.src = documenturl
     });
-
+    /*
+    documentModalElem.onclick = function () {
+        documentModalElem.style.display = "none";
+    }
+    */
+    documentModalElem.addEventListener('hidden.bs.modal', function (event) {
+        modalBodyIFrame.src = ""
+    })
     var viewer = OpenSeadragon({
         id: "collage",
         showNavigator: true,
