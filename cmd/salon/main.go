@@ -143,7 +143,7 @@ func main() {
 	if err != nil {
 		logger.Panicf("cannot parse url %s -> %s: %v", urlExt.String(), "data", err)
 	}
-	bb, err := bangbang.NewBangBang(index, urlExt, dataUrl, collagePos, bangTemplateFS, logger, config.Bang.TemplateDev)
+	bb, err := bangbang.NewBangBang(index, urlExt, dataUrl, collagePos, bangTemplateFS, logger, config.Station, config.Bang.TemplateDev)
 	if err != nil {
 		logger.Panicf("cannot instantiate bangbang: %v", err)
 	}
@@ -216,6 +216,8 @@ func main() {
 	srv.AddSubServer("/salon", bbs)
 	bbz := &bangbang.BBZoom{BangBang: bb}
 	srv.AddSubServer("/digitale-see", bbz)
+	bbHome := &bangbang.BBHome{BangBang: bb}
+	srv.AddSubServer("", bbHome)
 
 	go func() {
 		if err := srv.ListenAndServe(config.CertPem, config.KeyPem); err != nil {

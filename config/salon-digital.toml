@@ -10,6 +10,7 @@ user = ""
 password = ""
 datadir = "c:/temp/bangbang"
 bleveindex = "c:/temp/bangbang/bangbang.bleve"
+station = false
 [salon]
 picturefsimage = "./pkg/salon/embed/pfsEmbed/salon-digital.png"
 picturefsjson = "./pkg/salon/embed/pfsEmbed/salon-digital.json"

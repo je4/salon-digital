@@ -51,6 +51,7 @@ type SalonDigitalConfig struct {
 	BrowserTimeout duration    `toml:"browsertimeout"`
 	BrowserURL     string      `toml:"browserurl"`
 	Bang           BangConfig  `toml:"bang"`
+	Station        bool
 }
 
 func LoadSalonDigitalConfig(fp string, conf *SalonDigitalConfig) error {

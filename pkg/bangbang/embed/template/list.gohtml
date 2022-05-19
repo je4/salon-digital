@@ -65,7 +65,7 @@
 <main style="height: calc(100vh - 60px);">
     <div class="row" style="width: 100%; height: 100%;">
         <div class="col-md-2 d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="">
-            <span class="fs-4" style="text-align: center;"><img src="{{list $data.DataDir "media/bangbang_300x300.png" | joinSingle "/"}}" style="width: 200px;"/></span>
+            <span class="fs-4" style="text-align: center;">{{if not .Station}}<a href="../">{{end}}<img src="{{list $data.DataDir "media/bangbang_300x300.png" | joinSingle "/"}}" style="width: 200px;"/>{{if not .Station}}</a>{{end}}</span>
             <hr>
             <ul class="nav nav-pills flex-column mb-auto">
                 <li class="nav-item">
@@ -131,12 +131,12 @@
                                 <td style="height: 113px; overflow: hidden;">
                                     {{$num := 0}}
                                     {{- range $p := $item.Persons}}
-                                        {{- if eq $p.Role "artist"}}{{if gt $num 0}}; {{end}}{{$p.Name}}{{if ne $p.Role ""}}{{end}}{{- $num = add $num 1}}{{- end}}
+                                        {{- if hasPrefix "artist" $p.Role}}{{if gt $num 0}}; {{end}}{{$p.Name}}{{if ne $p.Role ""}}{{end}}{{- $num = add $num 1}}{{- end}}
                                     {{- end}}
                                     <!-- <br />
                                     {{$num = 0}}
                                     {{- range $p := $item.Persons}}
-                                        {{- if ne $p.Role "artist"}}{{if gt $num 0}}; {{end}}{{$p.Name}}{{if ne $p.Role ""}} ({{$p.Role}}){{end}}{{- $num = add $num 1}}{{- end}}
+                                        {{- if not (hasPrefix "artist" $p.Role)}}{{if gt $num 0}}; {{end}}{{$p.Name}}{{if ne $p.Role ""}} ({{$p.Role}}){{end}}{{- $num = add $num 1}}{{- end}}
                                     {{- end}}
                                     -->
                                 </td>
@@ -171,7 +171,7 @@
 
 <footer class="footer text-muted py-3 bg-dark">
     <div class="container">
-        <p class="mb-1">Provided by <b>Mediathek HGK FHNW</b> and <b>info-age GmbH, Basel</b></p>
+        <p class="mb-1">Provided by <b>{{if not .Station}}<a class="text-muted" href="https://mediathek.hgk.fhnw.ch">{{end}}Mediathek HGK FHNW{{if not .Station}}</a>{{end}}</b> and <b>info-age GmbH, Basel</b></p>
     </div>
 </footer>
 

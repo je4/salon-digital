@@ -26,6 +26,7 @@ type BangBang struct {
 	dataUrl    *url.URL
 	logger     *logging.Logger
 	dev        bool
+	station    bool
 	collagePos map[string][]image.Rectangle
 	templates  map[string]*template.Template
 	templateFS fs.FS
@@ -35,31 +36,32 @@ type BangBang struct {
 	gridUrl    *url.URL
 }
 
-func NewBangBang(index bleve.Index, urlExt *url.URL, dataUrl *url.URL, collagePos map[string][]image.Rectangle, templateFS fs.FS, logger *logging.Logger, dev bool) (*BangBang, error) {
+func NewBangBang(index bleve.Index, urlExt *url.URL, dataUrl *url.URL, collagePos map[string][]image.Rectangle, templateFS fs.FS, logger *logging.Logger, station, dev bool) (*BangBang, error) {
 	b := &BangBang{
 		index:      index,
 		urlExt:     urlExt,
 		dataUrl:    dataUrl,
 		collagePos: collagePos,
 		logger:     logger,
+		station:    station,
 		dev:        dev,
 		templateFS: templateFS,
 		templates:  map[string]*template.Template{},
 	}
 	var err error
-	b.salonUrl, err = b.urlExt.Parse("/salon/")
+	b.salonUrl, err = b.urlExt.Parse("salon/")
 	if err != nil {
 		return nil, emperror.Wrapf(err, "cannot parse url %s -> %s", b.urlExt.String(), "/salon")
 	}
-	b.listUrl, err = b.urlExt.Parse("/list/")
+	b.listUrl, err = b.urlExt.Parse("list/")
 	if err != nil {
 		return nil, emperror.Wrapf(err, "cannot parse url %s -> %s", b.urlExt.String(), "/list")
 	}
-	b.gridUrl, err = b.urlExt.Parse("/grid/")
+	b.gridUrl, err = b.urlExt.Parse("grid/")
 	if err != nil {
 		return nil, emperror.Wrapf(err, "cannot parse url %s -> %s", b.urlExt.String(), "/grid")
 	}
-	b.panoUrl, err = b.urlExt.Parse("/digitale-see/")
+	b.panoUrl, err = b.urlExt.Parse("digitale-see/")
 	if err != nil {
 		return nil, emperror.Wrapf(err, "cannot parse url %s -> %s", b.urlExt.String(), "/pano")
 	}
@@ -269,6 +271,7 @@ func (bb *BangBang) ListHandler(w http.ResponseWriter, r *http.Request) {
 		ListUrl  string
 		GridUrl  string
 		PanoUrl  string
+		Station  bool
 	}{
 		Items:    works,
 		DataDir:  bb.dataUrl.String(),
@@ -276,6 +279,7 @@ func (bb *BangBang) ListHandler(w http.ResponseWriter, r *http.Request) {
 		ListUrl:  bb.listUrl.String(),
 		GridUrl:  bb.gridUrl.String(),
 		PanoUrl:  bb.panoUrl.String(),
+		Station:  bb.station,
 	}
 
 	if err := tpl.Execute(w, data); err != nil {
@@ -308,6 +312,7 @@ func (bb *BangBang) GridHandler(w http.ResponseWriter, r *http.Request) {
 		ListUrl  string
 		GridUrl  string
 		PanoUrl  string
+		Station  bool
 	}{
 		Items:    works,
 		DataDir:  bb.dataUrl.String(),
@@ -315,6 +320,7 @@ func (bb *BangBang) GridHandler(w http.ResponseWriter, r *http.Request) {
 		ListUrl:  bb.listUrl.String(),
 		GridUrl:  bb.gridUrl.String(),
 		PanoUrl:  bb.panoUrl.String(),
+		Station:  bb.station,
 	}
 
 	if err := tpl.Execute(w, data); err != nil {
@@ -340,12 +346,46 @@ func (bb *BangBang) SalonHandler(w http.ResponseWriter, r *http.Request) {
 		SalonUrl string
 		ListUrl  string
 		GridUrl  string
+		Station  bool
 	}{
 		SalonUrl: bb.salonUrl.String(),
 		ListUrl:  bb.listUrl.String(),
 		GridUrl:  bb.gridUrl.String(),
 		DataDir:  bb.dataUrl.String(),
 		PanoUrl:  bb.panoUrl.String(),
+		Station:  bb.station,
+	}
+	if err := tpl.Execute(w, data); err != nil {
+		bb.logger.Errorf("cannot execute template: %v", err)
+		http.Error(w, fmt.Sprintf("cannot execute template: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+}
+
+func (bb *BangBang) HomeHandler(w http.ResponseWriter, r *http.Request) {
+	if bb.dev {
+		bb.initTemplates()
+	}
+	tpl, ok := bb.templates["home.gohtml"]
+	if !ok {
+		http.Error(w, "cannot find document.gohtml", http.StatusInternalServerError)
+		return
+	}
+	data := struct {
+		DataDir  string
+		PanoUrl  string
+		SalonUrl string
+		ListUrl  string
+		GridUrl  string
+		Station  bool
+	}{
+		SalonUrl: bb.salonUrl.String(),
+		ListUrl:  bb.listUrl.String(),
+		GridUrl:  bb.gridUrl.String(),
+		DataDir:  bb.dataUrl.String(),
+		PanoUrl:  bb.panoUrl.String(),
+		Station:  bb.station,
 	}
 	if err := tpl.Execute(w, data); err != nil {
 		bb.logger.Errorf("cannot execute template: %v", err)
@@ -370,12 +410,14 @@ func (bb *BangBang) ZoomHandler(w http.ResponseWriter, r *http.Request) {
 		SalonUrl string
 		ListUrl  string
 		GridUrl  string
+		Station  bool
 	}{
 		SalonUrl: bb.salonUrl.String(),
 		ListUrl:  bb.listUrl.String(),
 		GridUrl:  bb.gridUrl.String(),
 		DataDir:  bb.dataUrl.String(),
 		PanoUrl:  bb.panoUrl.String(),
+		Station:  bb.station,
 	}
 	if err := tpl.Execute(w, data); err != nil {
 		bb.logger.Errorf("cannot execute template: %v", err)
@@ -409,9 +451,11 @@ func (bb *BangBang) DocumentHandler(w http.ResponseWriter, r *http.Request) {
 	data := struct {
 		Item    *search.SourceData
 		DataDir string
+		Station bool
 	}{
 		Item:    src,
 		DataDir: bb.dataUrl.String(),
+		Station: bb.station,
 	}
 	if err := tpl.Execute(w, data); err != nil {
 		bb.logger.Errorf("cannot execute template: %v", err)

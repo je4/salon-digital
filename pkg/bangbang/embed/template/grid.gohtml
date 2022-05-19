@@ -54,7 +54,7 @@
 
     <div class="row h-100" style="width: 100%;">
         <div class="col-md-2 d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="">
-            <span class="fs-4" style="text-align: center;"><img src="{{list $data.DataDir "media/bangbang_300x300.png" | joinSingle "/"}}" style="width: 200px;"/></span>
+            <span class="fs-4" style="text-align: center;">{{if not .Station}}<a href="../">{{end}}<img src="{{list $data.DataDir "media/bangbang_300x300.png" | joinSingle "/"}}" style="width: 200px;"/>{{if not .Station}}</a>{{end}}</span>
             <hr>
             <ul class="nav nav-pills flex-column mb-auto">
                 <li class="nav-item">
@@ -104,7 +104,7 @@
                             <div class="card-body py-1">
                                 <p class="card-text">{{if (eq $item.Source "zotero2-1624911")}}Performance Chronik Basel<br />{{end}}#{{$item.SignatureOriginal}} <span style="font-weight: bold;">{{$item.Title}}</span>{{if (ne $item.Date "")}}, {{$item.Date}}{{end}}<br />
                                     {{$count := 0 }}
-                                    {{- range $p := $item.Persons}}{{if (eq $p.Role "artist")}}{{if gt $count 0}}; {{end}}{{$p.Name}}{{$count = add $count 1}}{{end}}
+                                    {{- range $p := $item.Persons}}{{if (hasPrefix "artist" $p.Role)}}{{if gt $count 0}}; {{end}}{{$p.Name}}{{$count = add $count 1}}{{end}}
                                     {{- end}}
                                     <br />
                                     {{trimSuffix " (Reihenfolge am Ende vom Dateinamen benennen!) / Photo series (name sequence at the end of the file name!)" (index $item.Meta "medium")}}
@@ -132,7 +132,7 @@
 
 <footer class="text-muted py-3 bg-dark">
     <div class="container">
-        <p class="mb-1">Provided by <b>Mediathek HGK FHNW</b> and <b>info-age GmbH, Basel</b></p>
+        <p class="mb-1">Provided by <b>{{if not .Station}}<a class="text-muted" href="https://mediathek.hgk.fhnw.ch">{{end}}Mediathek HGK FHNW{{if not .Station}}</a>{{end}}</b> and <b>info-age GmbH, Basel</b></p>
     </div>
 </footer>
 

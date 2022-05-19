@@ -217,12 +217,12 @@
                         ({{.Item.Date}}){{end}}</h1>
                     <h2 style="margin-top: 20px;margin-bottom: 20px;">
                     {{range $key, $p := .Item.Persons}}
-                        {{- if eq $p.Role "artist"}}
+                        {{- if hasPrefix "artist" $p.Role}}
                             {{- if gt $key 0}}; {{end}}{{$p.Name}}{{end}}{{end}}
                     </h2>
                     <h3>
                     {{range $p := .Item.Persons}}
-                        {{- if ne $p.Role "artist"}}
+                        {{- if not (hasPrefix "artist" $p.Role)}}
                             {{$p.Name}} ({{camelcase (trimPrefix "performer:" $p.Role)}})<br />
                         {{- end}}
                     {{end}}
