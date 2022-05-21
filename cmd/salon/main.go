@@ -53,6 +53,7 @@ func main() {
 		User:           "",
 		Password:       "",
 		Browser:        true,
+		Station:        true,
 		BleveIndex:     filepath.Join(exPath, "bangbang.bleve"),
 		Salon: SalonConfig{
 			TemplateDev:    false,

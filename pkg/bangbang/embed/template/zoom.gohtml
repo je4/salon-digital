@@ -165,6 +165,9 @@
         }
         xhr.send(null);
     });
+    documentModal.addEventListener('hidden.bs.modal', function (event) {
+        modalBodyIFrame.src = ""
+    })
 </script>
 </body>
 </html>
