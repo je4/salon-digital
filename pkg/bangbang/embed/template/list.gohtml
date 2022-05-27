@@ -10,7 +10,7 @@
     <!-- Bootstrap core CSS -->
     <link href="{{$data.DataDir}}bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="{{$data.DataDir}}bootstrap/css/bootstrap-icons.css" rel="stylesheet">
-    <link href="{{$data.DataDir}}datatables/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <link href="{{$data.DataDir}}datatables/css/responsive.bootstrap5.min.css" rel="stylesheet">
 
 
     <style>
@@ -97,8 +97,8 @@
                         <i class="bi-bootstrap fs-1"></i>
                     </a>
                     -->
-                    <span class="fs-4 d-none d-lg-inline" style="text-align: center;">{{if not .Station}}<a href=".">{{end}}<img src="{{list $data.DataDir "media/bangbang_300x300.png" | joinSingle "/"}}" style="width: 200px;"/>{{if not .Station}}</a>{{end}}</span>
-                    <span class="fs-4 d-lg-none" style="text-align: center;">{{if not .Station}}<a href=".">{{end}}<img src="{{list $data.DataDir "media/bangbang_300x300.png" | joinSingle "/"}}" style="width: 60px;"/>{{if not .Station}}</a>{{end}}</span>
+                    <span class="fs-4 d-none d-lg-inline" style="text-align: center;">{{if not .Station}}<a href="..">{{end}}<img src="{{list $data.DataDir "media/bangbang_300x300.png" | joinSingle "/"}}" style="width: 200px;"/>{{if not .Station}}</a>{{end}}</span>
+                    <span class="fs-4 d-lg-none" style="text-align: center;">{{if not .Station}}<a href="..">{{end}}<img src="{{list $data.DataDir "media/bangbang_300x300.png" | joinSingle "/"}}" style="width: 60px;"/>{{if not .Station}}</a>{{end}}</span>
                     <hr>
                     <ul class="nav nav-pills nav-flush flex-sm-column flex-row flex-nowrap mb-auto mx-auto">
                         <li class="nav-item">
@@ -108,7 +108,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{$data.ListUrl}}" class="nav-link text-white">
+                            <a href="{{$data.ListUrl}}" class="nav-link text-white bg-secondary active">
                                 <i class="bi bi-list-ul"></i>
                                 <span  class="d-none d-lg-inline">Liste</span>
                             </a>
@@ -133,16 +133,16 @@
             <div class="container-fluid">
 
                 <div class="row g-3">
-                    <table id="works" class="table table-striped" style="width:100%">
+                    <table id="works" class="table table-striped dt-responsive" style="width:100%">
                         <thead>
                         <tr>
                             <th></th>
-                            <th>#ID</th>
-                            <th>KünstlerIn</th>
-                            <th>Jahr</th>
-                            <th>Titel</th>
-                            <th>Medium</th>
-                            <th>PerformerIn</th>
+                            <th class="desktop">#ID</th>
+                            <th class="all">KünstlerIn</th>
+                            <th class="desktop">Jahr</th>
+                            <th class="all">Titel</th>
+                            <th class="desktop">Medium</th>
+                            <th class="desktop">PerformerIn</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -215,7 +215,8 @@
 <script src="{{$data.DataDir}}bootstrap/js/bootstrap.bundle.js"></script>
 <script src="{{$data.DataDir}}jquery/js/jquery-3.5.1.js"></script>
 <script src="{{$data.DataDir}}datatables/js/jquery.dataTables.min.js"></script>
-<script src="{{$data.DataDir}}datatables/js/dataTables.bootstrap5.min.js"></script>
+<script src="{{$data.DataDir}}datatables/js/datatables.responsive.min.js"></script>
+<script src="{{$data.DataDir}}datatables/js/responsive.bootstrap5.min.js"></script>
 
 
 <script>
@@ -229,7 +230,8 @@
 //            paging:   true,
             ordering: true,
             info:     false,
-            search:  true
+            search:  true,
+            responsive: true,
         } );
         var documentModal = document.getElementById('documentModal')
         var modalTitle = documentModal.querySelector('.modal-title')

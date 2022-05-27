@@ -27,15 +27,39 @@
                 font-size: 3.5rem;
             }
         }
+        @media (max-width: 576px) {
+            .content-height {
+                height: calc(100vh - 120px);
+            }
+            .footer-bs{
+                position: absolute;
+                width: 100%;
+                height: 84px;
+                bottom: 0px;
+                left: 0;
+            }
+        }
+        @media (min-width: 576px) {
+            .content-height {
+                height: calc(100vh - 60px);
+            }
+            .footer-bs{
+                position: absolute;
+                width: 100%;
+                height: 60px;
+                bottom: 0px;
+                left: 0;
+            }
+        }
+
     </style>
 
 
 </head>
-<body style="height: 100vh;">
+<body class="bg-dark min-vh-100">
 
 
-<main style="height: calc(100vh - 60px);">
-    <div class="modal fade" id="documentModal" tabindex="-1" aria-labelledby="documentLabel" aria-hidden="true">
+    <div class="modal fade" id="documentModal" tabindex="-1" aria-labelledby="d ocumentLabel" aria-hidden="true">
         <div class="modal-dialog modal-fullscreen">
             <div class="modal-content bg-dark">
                 <div class="modal-header bg-dark text-light" data-bs-dismiss="modal">
@@ -53,50 +77,62 @@
     </div>
 
 
-    <div class="row h-100" style="width: 100%;">
-        <div class="col-md-2 d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="">
-            <span class="fs-4" style="text-align: center;">{{if not .Station}}<a href="../">{{end}}<img src="{{list $data.DataDir "media/bangbang_300x300.png" | joinSingle "/"}}" style="width: 200px;"/>{{if not .Station}}</a>{{end}}</span>
-            <hr>
-            <ul class="nav nav-pills flex-column mb-auto">
-                <li class="nav-item">
-                    <a href="{{$data.GridUrl}}" class="nav-link text-white" aria-current="page">
-                        <i class="bi bi-grid-3x3-gap-fill"></i>
-                        Grid
-                    </a>
-                </li>
-                <li>
-                    <a href="{{$data.ListUrl}}" class="nav-link text-white">
-                        <i class="bi bi-list-ul"></i>
-                        Liste
-                    </a>
-                </li>
-                <li>
-                    <a href="{{$data.PanoUrl}}" class="nav-link bg-secondary active">
-                        <i class="bi bi-grid-3x3"></i>
-                        Digitale See
-                    </a>
-                </li>
-                <li>
-                    <a href="{{$data.SalonUrl}}" class="nav-link text-white">
-                        <img style="width:17px; padding-bottom: 3px;" src="{{list $data.DataDir "img" "sdmllogo.png" | joinSingle "/"}}">
-                        Salon Digital
-                    </a>
-                </li>
-            </ul>
-        </div>
-
-        <div class="col-md-10" style="margin: 0; padding: 0; background-color: black;">
+    <main class="content-height">
+        <div class="container-fluid content-height">
+            <div class="row">
+                <div class="col-sm-auto text-white bg-dark sticky-top">
+                    <div class="d-flex flex-sm-column flex-row flex-nowrap text-white bg-dark sticky-top">
+                        <!--
+                       <a href="/" class="d-block p-3 link-dark text-decoration-none" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
+                            <i class="bi-bootstrap fs-1"></i>
+                        </a>
+                        -->
+                        <span class="fs-4 d-none d-lg-inline" style="text-align: center;">{{if not .Station}}<a href="..">{{end}}<img src="{{list $data.DataDir "media/bangbang_300x300.png" | joinSingle "/"}}" style="width: 200px;"/>{{if not .Station}}</a>{{end}}</span>
+                        <span class="fs-4 d-lg-none" style="text-align: center;">{{if not .Station}}<a href="..">{{end}}<img src="{{list $data.DataDir "media/bangbang_300x300.png" | joinSingle "/"}}" style="width: 60px;"/>{{if not .Station}}</a>{{end}}</span>
+                        <hr>
+                        <ul class="nav nav-pills nav-flush flex-sm-column flex-row flex-nowrap mb-auto mx-auto">
+                            <li class="nav-item">
+                                <a href="{{$data.GridUrl}}" class="nav-link text-white" aria-current="page">
+                                    <i class="bi bi-grid-3x3-gap-fill"></i>
+                                    <span  class="d-none d-lg-inline">Grid</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{$data.ListUrl}}" class="nav-link text-white">
+                                    <i class="bi bi-list-ul"></i>
+                                    <span  class="d-none d-lg-inline">Liste</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{$data.PanoUrl}}" class="nav-link text-white bg-secondary active">
+                                    <i class="bi bi-grid-3x3"></i>
+                                    <span  class="d-none d-lg-inline">Digitale See</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{$data.SalonUrl}}" class="nav-link text-white">
+                                    <img style="width:17px; padding-bottom: 3px;" src="{{list $data.DataDir "img" "sdmllogo.png" | joinSingle "/"}}">
+                                    <span  class="d-none d-lg-inline">Salon Digital</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-sm p-3 text-white rounded bg-dark overflow-auto content-height">
+                    <!-- start content -->
             <div id="collage" style="width: 100%; height: 100%;"></div>
+                    <!-- end content -->
+                </div>
+            </div>
         </div>
-    </div>
-</main>
+    </main>
 
-<footer class="text-muted py-3 bg-dark">
-    <div class="container">
-        <p class="mb-1">Provided by <b>{{if not .Station}}<a class="text-muted" href="https://mediathek.hgk.fhnw.ch">{{end}}Mediathek HGK FHNW{{if not .Station}}</a>{{end}}</b> and <b>info-age GmbH, Basel</b></p>
-    </div>
-</footer>
 
+    <footer class="text-muted footer-bs py-3 bg-dark">
+        <div class="container">
+            <p class="mb-1">Provided by <b>{{if not .Station}}<a class="text-muted" href="https://mediathek.hgk.fhnw.ch">{{end}}Mediathek HGK FHNW{{if not .Station}}</a>{{end}}</b> and <b>info-age GmbH, Basel</b></p>
+        </div>
+    </footer>
 
 <script src="{{list $data.DataDir "bootstrap/js/bootstrap.bundle.js" | joinSingle "/"}}"></script>
 <script src="{{list $data.DataDir "/openseadragon/openseadragon.min.js" | joinSingle "/"}}"></script>
@@ -131,9 +167,12 @@
         showNavigator: true,
         prefixUrl: "{{list $data.DataDir "openseadragon/images/" | joinSingle "/"}}",
         tileSources: "{{list $data.DataDir "collage.dzi" | joinSingle "/"}}",
-        defaultZoomLevel: 5,
+        //defaultZoomLevel: 5,
     });
     viewer.gestureSettingsMouse.clickToZoom = false;
+    viewer.addHandler('open', function() {
+        viewer.viewport.zoomTo(3, null, true);
+    });
     viewer.addHandler('canvas-double-click', function(event) {
         // The canvas-click event gives us a position in web coordinates.
         var webPoint = event.position;
