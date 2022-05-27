@@ -27,127 +27,149 @@
                 font-size: 3.5rem;
             }
         }
+        @media (max-width: 576px) {
+            .content-height {
+                height: calc(100vh - 120px);
+            }
+            .footer-bs{
+                position: absolute;
+                width: 100%;
+                height: 84px;
+                bottom: 0px;
+                left: 0;
+            }
+        }
+        @media (min-width: 576px) {
+            .content-height {
+                height: calc(100vh - 60px);
+            }
+            .footer-bs{
+                position: absolute;
+                width: 100%;
+                height: 60px;
+                bottom: 0px;
+                left: 0;
+            }
+        }
+
     </style>
 
 
 </head>
-<body class="bg-dark" style="height: 100vh;">
+<body class="bg-dark min-vh-100">
 
 
-<main style="height: calc(100vh - 60px);">
-    <div class="row h-100" style="width: 100%;">
-        <div class="col-md-2 d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="">
-            <span class="fs-4" style="text-align: center;">{{if not .Station}}<a href=".">{{end}}<img src="{{list $data.DataDir "media/bangbang_300x300.png" | joinSingle "/"}}" style="width: 200px;"/>{{if not .Station}}</a>{{end}}</span>
-            <hr>
-            <ul class="nav nav-pills flex-column mb-auto">
-                <li class="nav-item">
-                    <a href="{{$data.GridUrl}}" class="nav-link text-white" aria-current="page">
-                        <i class="bi bi-grid-3x3-gap-fill"></i>
-                        Grid
+<main class="content-height">
+    <div class="container-fluid content-height">
+        <div class="row">
+            <div class="col-sm-auto text-white bg-dark sticky-top">
+                <div class="d-flex flex-sm-column flex-row flex-nowrap text-white bg-dark sticky-top">
+                    <!--
+                   <a href="/" class="d-block p-3 link-dark text-decoration-none" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
+                        <i class="bi-bootstrap fs-1"></i>
                     </a>
-                </li>
-                <li>
-                    <a href="{{$data.ListUrl}}" class="nav-link text-white">
-                        <i class="bi bi-list-ul"></i>
-                        Liste
-                    </a>
-                </li>
-                <li>
-                    <a href="{{$data.PanoUrl}}" class="nav-link text-white">
-                        <i class="bi bi-grid-3x3"></i>
-                        Digitale See
-                    </a>
-                </li>
-                <li>
-                    <a href="{{$data.SalonUrl}}" class="nav-link text-white">
-                        <img style="width:17px; padding-bottom: 3px;" src="{{list $data.DataDir "img" "sdmllogo.png" | joinSingle "/"}}">
-                        Salon Digital
-                    </a>
-                </li>
-            </ul>
-            <hr>
-            <ul class="nav nav-pills flex-column mb-auto">
-                <li class="nav-item">
-                    <a href="https://mediathek.hgk.fhnw.ch/apply/bangbang/" class="nav-link text-white" aria-current="page">
-                        <i class="bi bi-file-earmark-plus"></i>
-                        Neu Einreichen
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="https://mediathek.hgk.fhnw.ch/corrbangbang/" class="nav-link text-white" aria-current="page">
-                        <i class="bi bi-file-earmark-ruled"></i>
-                        Korrigieren
-                    </a>
-                </li>
-            </ul>
-        </div>
-
-        <div class="col-md-10 p-4 p-md-5 text-white rounded bg-dark overflow-auto" style="height: calc(100vh - 60px);">
-            <h1 class="display-4 fst-italic">BANG BANG – translokale Performance Geschichte:n<br />
-                8. Juni 2022 – 21. August 2022</h1>
-            <p class="font-monospace">
-                ein Ausstellungsprojekt von Revolving Histories/Performance
-                Chronik Basel und Museum Tinguely
-            </p>
-            <p class="font-monospace">
-            Aufzeigen von Zusammenhängen informeller Netzwerke, der
-            Diversität von Strömungen und Haltungen und den vielfältigen
-            und differenten Erzählungen von Performance Geschichten. Dabei
-            geht es um aktuelle Fragen der Performance Kunst, was passiert
-            heute und wie wollen wir Performance Kunst in die Zukunft
-            denken.
-            </p>
-            <h2 class="font-monospace">
-            Performance Ausstellung im Museum Tinguely
-            </h2>
-            <p class="font-monospace">
-            Die Performance Ausstellung BANG BANG findet vom Juni bis
-            August 2022 im Museum Tinguely statt. Dabei stehen sieben
-            Themenfelder im Fokus.
-            </p>
-            <p class="font-monospace">
-            <ol>
-                <li>Saga (Blick zurück)</li>
-                <li>Ausbruch aus den Medien (ästhetische Praxen)</li>
-                <li>Zur radikalen Gleichwertigkeit von Erfahrungen
-                    (Queer/Choreopolitics)</li>
-                <li>Flüchtige Tat (Politik/Feminismus)</li>
-                <li>Soziale Eleganz (Freundschaft, Szenen, Netzwerke)</li>
-                <li>Direktübertragung (Situation/Rezeption)</li>
-                <li>Freckly Night(Schillernde Momente zwischen Vergangenheit
-                    und Zukunft)</li>
-            </ol>
-            </p>
-            <p class="font-monospace">
-                <span class="fw-bold">Konzeption/Realisation:</span> Lena Eriksson, Muda Mathis, Chris Regn, Andrea
-                Saemann<br />
-                <span class="fw-bold">Projektpartner:</span> Museum Tinguely, Basel, www.tinguely.ch
-                Séverine Fromaigeat (Museum Tinguely), Kuratorin für das internationale
-                Performanceprogramm<br />
+                    -->
+                    <span class="fs-4 d-none d-lg-inline" style="text-align: center;">{{if not .Station}}<a href=".">{{end}}<img src="{{list $data.DataDir "media/bangbang_300x300.png" | joinSingle "/"}}" style="width: 200px;"/>{{if not .Station}}</a>{{end}}</span>
+                    <span class="fs-4 d-lg-none" style="text-align: center;">{{if not .Station}}<a href=".">{{end}}<img src="{{list $data.DataDir "media/bangbang_300x300.png" | joinSingle "/"}}" style="width: 60px;"/>{{if not .Station}}</a>{{end}}</span>
+                    <hr>
+                    <ul class="nav nav-pills nav-flush flex-sm-column flex-row flex-nowrap mb-auto mx-auto">
+                        <li class="nav-item">
+                            <a href="{{$data.GridUrl}}" class="nav-link text-white" aria-current="page">
+                                <i class="bi bi-grid-3x3-gap-fill"></i>
+                                <span  class="d-none d-lg-inline">Grid</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{$data.ListUrl}}" class="nav-link text-white">
+                                <i class="bi bi-list-ul"></i>
+                                <span  class="d-none d-lg-inline">Liste</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{$data.PanoUrl}}" class="nav-link text-white">
+                                <i class="bi bi-grid-3x3"></i>
+                                <span  class="d-none d-lg-inline">Digitale See</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{$data.SalonUrl}}" class="nav-link text-white">
+                                <img style="width:17px; padding-bottom: 3px;" src="{{list $data.DataDir "img" "sdmllogo.png" | joinSingle "/"}}">
+                                <span  class="d-none d-lg-inline">Salon Digital</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-sm p-3 text-white rounded bg-dark overflow-auto content-height">
+                <!-- start content -->
+                <h1 class="display-4 fst-italic">BANG BANG – translokale Performance Geschichte:n<br />
+                    8. Juni 2022 – 21. August 2022</h1>
+                <p class="font-monospace">
+                    ein Ausstellungsprojekt von Revolving Histories/Performance
+                    Chronik Basel und Museum Tinguely
+                </p>
+                <p class="font-monospace">
+                    Aufzeigen von Zusammenhängen informeller Netzwerke, der
+                    Diversität von Strömungen und Haltungen und den vielfältigen
+                    und differenten Erzählungen von Performance Geschichten. Dabei
+                    geht es um aktuelle Fragen der Performance Kunst, was passiert
+                    heute und wie wollen wir Performance Kunst in die Zukunft
+                    denken.
+                </p>
+                <h2 class="font-monospace">
+                    Performance Ausstellung im Museum Tinguely
+                </h2>
+                <p class="font-monospace">
+                    Die Performance Ausstellung BANG BANG findet vom Juni bis
+                    August 2022 im Museum Tinguely statt. Dabei stehen sieben
+                    Themenfelder im Fokus.
+                </p>
+                <p class="font-monospace">
+                <ol>
+                    <li>Saga (Blick zurück)</li>
+                    <li>Ausbruch aus den Medien (ästhetische Praxen)</li>
+                    <li>Zur radikalen Gleichwertigkeit von Erfahrungen
+                        (Queer/Choreopolitics)</li>
+                    <li>Flüchtige Tat (Politik/Feminismus)</li>
+                    <li>Soziale Eleganz (Freundschaft, Szenen, Netzwerke)</li>
+                    <li>Direktübertragung (Situation/Rezeption)</li>
+                    <li>Freckly Night(Schillernde Momente zwischen Vergangenheit
+                        und Zukunft)</li>
+                </ol>
+                </p>
+                <p class="font-monospace">
+                    <span class="fw-bold">Konzeption/Realisation:</span> Lena Eriksson, Muda Mathis, Chris Regn, Andrea
+                    Saemann<br />
+                    <span class="fw-bold">Projektpartner:</span> Museum Tinguely, Basel, www.tinguely.ch
+                    Séverine Fromaigeat (Museum Tinguely), Kuratorin für das internationale
+                    Performanceprogramm<br />
                     <span class="fw-bold">Erweitertes Projektteam:</span> Sabine Gebhardt Fink, Tancredi Gusman, Deirdre
-                O’Leary, Dorothea Rust, Margarit von Büren<br />
+                    O’Leary, Dorothea Rust, Margarit von Büren<br />
                     <span class="fw-bold">Erweitertes Rechercheteam:</span> Madeleine Amsler, Pascale Grau, Gisela Hochuli,
-                Judith Huber, Marie-Ève Knoerle<br />
+                    Judith Huber, Marie-Ève Knoerle<br />
                     <span class="fw-bold">Kollaborationspartner:</span> <span class="badge bg-secondary">PANCH – Performance Art Netzwerk CH | Soziale
                     Eleganz</span> <span class="badge bg-secondary">Mediathek HGK FHNW | Tabea Lurk</span> <span class="badge bg-secondary">info-age GmbH | Jürgen Enge</span>
-                <span class="badge bg-secondary">Wikimedia Schweiz</span> <span class="badge bg-secondary">HSLU, Master Fine Arts, Berufsfeldpraxis | Lena
+                    <span class="badge bg-secondary">Wikimedia Schweiz</span> <span class="badge bg-secondary">HSLU, Master Fine Arts, Berufsfeldpraxis | Lena
                     Eriksson</span> <span class="badge bg-secondary">HSLU, Networking Performance Art Histories | Sabine Gebhardt
                     Fink</span> <span class="badge bg-secondary">HKB, Master of Arts, Contemporary Arts Practice | Valerian Maly</span>
-                <span class="badge bg-secondary">Lumpen Station | Radioshow | Andrea Marioni, Mathilde Beetschen, Ivan
+                    <span class="badge bg-secondary">Lumpen Station | Radioshow | Andrea Marioni, Mathilde Beetschen, Ivan
                 Chrichton, Luke Archer</span><br />
                     <span class="fw-bold">Trägerschaft</span> Verein Performance Chronik Basel,
-                www.performancechronikbasel.ch<br />
-            </p>
+                    www.performancechronikbasel.ch<br />
+                </p>
+            </div>
+                <!-- end content -->
+            </div>
         </div>
     </div>
 </main>
 
-<footer class="text-muted py-3 bg-dark">
+
+<footer class="text-muted footer-bs py-3 bg-dark">
     <div class="container">
         <p class="mb-1">Provided by <b>{{if not .Station}}<a class="text-muted" href="https://mediathek.hgk.fhnw.ch">{{end}}Mediathek HGK FHNW{{if not .Station}}</a>{{end}}</b> and <b>info-age GmbH, Basel</b></p>
     </div>
 </footer>
-
 
 <script src="{{list $data.DataDir "bootstrap/js/bootstrap.bundle.js" | joinSingle "/"}}"></script>
 </body>
