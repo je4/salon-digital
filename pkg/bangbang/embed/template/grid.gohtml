@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
     <meta name="author" content="Jürgen Enge (juergen@info-age.net)">
+    <meta name="robots" content="noindex" />
     <title>Einreichungen Bang Bang</title>
 
     <!-- Bootstrap core CSS -->
@@ -50,6 +51,13 @@
                 left: 0;
             }
         }
+
+        p.help {
+            margin-bottom: 0px;
+            text-indent:-0.5em;
+            margin-left:0.5em
+        }
+
 
     </style>
 </head>
@@ -109,7 +117,41 @@
                                 <span  class="d-none d-lg-inline">Salon Digital</span>
                             </a>
                         </li>
+                        {{if not .Station}}
+                        <li class="nav-item d-none d-lg-inline">
+                            <hr />
+                        </li>
+                        <li class="nav-item d-none d-lg-inline">
+                            <a href="https://mediathek.hgk.fhnw.ch/apply/bangbang/" class="nav-link text-white" aria-current="page">
+                                <i class="bi bi-file-earmark-plus"></i>
+                                Neu Einreichen
+                            </a>
+                        </li>
+                        <li class="nav-item d-none d-lg-inline">
+                            <a href="https://mediathek.hgk.fhnw.ch/corrbangbang/" class="nav-link text-white" aria-current="page">
+                                <i class="bi bi-file-earmark-ruled"></i>
+                                Korrigieren
+                            </a>
+                        </li>
+                        <li class="nav-item d-none d-lg-inline">
+                            <a href="https://mediathek.hgk.fhnw.ch/apply/bangbang/" class="nav-link text-white" aria-current="page">
+                                <i class="bi bi-file-earmark-plus"></i>
+                                New Entry
+                            </a>
+                        </li>
+                        <li class="nav-item d-none d-lg-inline">
+                            <a href="https://mediathek.hgk.fhnw.ch/corrbangbang/" class="nav-link text-white" aria-current="page">
+                                <i class="bi bi-file-earmark-ruled"></i>
+                                Correct
+                            </a>
+                        </li>
+                        {{end}}
                     </ul>
+                    <div class="alert d-none d-lg-inline" role="alert" style="width:200px; color: #54fd53; border-color: #54fd53; margin-top: 30px;">
+                        <p class="help">1x Klicken, um Details des Eintrags anzusehen</p>
+                        <p class="help">Click once to visit the detail view</p>
+                        <p class="help">Cliquez une fois pour accéder à la vue détaillée</p>
+                    </div>
                 </div>
             </div>
             <div class="col-sm p-3 text-white rounded overflow-auto content-height" style="background-color: #979797; margin: 0; padding-top: 10px;">
@@ -124,7 +166,7 @@
                              data-bs-documenttitle="{{if (eq $item.Source "zotero2-1624911")}}Performance Chronik Basel - {{end}}#{{$item.SignatureOriginal}} {{$item.Title}}, {{$item.Date}}"
                         >
                             {{if $item.Poster}}
-                                <img style="width: 282px; height:240px; object-fit: cover;" src="{{list $data.DataDir "thumb" (mediaUrl (list $item.Poster.Uri "resize/formatjpeg/size240x240" | join "/") "jpg") | joinSingle "/"}}" loading="lazy" />
+                                <img style="width: 282px; height:240px; object-fit: cover;" src="{{list $data.DataDir "thumb" (mediaUrl (list $item.Poster.Uri "resize/autorotate/formatjpeg/size240x240" | join "/") "jpg") | joinSingle "/"}}" loading="lazy" />
                             {{else}}
                                 <img src="{{list $data.DataDir "media/bangbang_300x300.png" | joinSingle "/"}}" style="width: 240px; height:240px;" loading="lazy" />
                             {{end}}

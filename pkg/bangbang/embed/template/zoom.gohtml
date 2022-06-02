@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
     <meta name="author" content="Jürgen Enge (juergen@info-age.net)">
+    <meta name="robots" content="noindex" />
     <title>Einreichungen Bang Bang</title>
 
     <!-- Bootstrap core CSS -->
@@ -50,6 +51,12 @@
                 bottom: 0px;
                 left: 0;
             }
+        }
+
+        p.help {
+            margin-bottom: 0px;
+            text-indent:-0.5em;
+            margin-left:0.5em
         }
 
     </style>
@@ -115,7 +122,46 @@
                                     <span  class="d-none d-lg-inline">Salon Digital</span>
                                 </a>
                             </li>
+                            {{if not .Station}}
+                                <li class="nav-item d-none d-lg-inline">
+                                    <hr />
+                                </li>
+                                <li class="nav-item d-none d-lg-inline">
+                                    <a href="https://mediathek.hgk.fhnw.ch/apply/bangbang/" class="nav-link text-white" aria-current="page">
+                                        <i class="bi bi-file-earmark-plus"></i>
+                                        Neu Einreichen
+                                    </a>
+                                </li>
+                                <li class="nav-item d-none d-lg-inline">
+                                    <a href="https://mediathek.hgk.fhnw.ch/corrbangbang/" class="nav-link text-white" aria-current="page">
+                                        <i class="bi bi-file-earmark-ruled"></i>
+                                        Korrigieren
+                                    </a>
+                                </li>
+                                <li class="nav-item d-none d-lg-inline">
+                                    <a href="https://mediathek.hgk.fhnw.ch/apply/bangbang/" class="nav-link text-white" aria-current="page">
+                                        <i class="bi bi-file-earmark-plus"></i>
+                                        New Entry
+                                    </a>
+                                </li>
+                                <li class="nav-item d-none d-lg-inline">
+                                    <a href="https://mediathek.hgk.fhnw.ch/corrbangbang/" class="nav-link text-white" aria-current="page">
+                                        <i class="bi bi-file-earmark-ruled"></i>
+                                        Correct
+                                    </a>
+                                </li>
+                            {{end}}
                         </ul>
+                        <div class="alert d-none d-lg-inline" role="alert" style="width:200px; color: #54fd53; border-color: #54fd53; margin-top: 30px;">
+                            <p class="help">Zoomen mit Mausrad</p>
+                            <p class="help">Zoom with the mouse wheel</p>
+                            <p class="help">Zoom avec la souris</p>
+                            <hr>
+                            <p class="help">2x Klicken zur Detailseite</p>
+                            <p class="help">Click twice to visit the detail view</p>
+                            <p class="help">Cliquez deux fois pour accéder à la vue détaillée</p>
+
+                        </div>
                     </div>
                 </div>
                 <div class="col-sm p-3 text-white rounded bg-dark overflow-auto content-height">

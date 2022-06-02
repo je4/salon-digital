@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
     <meta name="author" content="Jürgen Enge (juergen@info-age.net)">
+    <meta name="robots" content="noindex" />
     <title>{{.Item.Title}}</title>
 
     <!-- Bootstrap core CSS -->
@@ -59,8 +60,8 @@
 </div>
 
 <div class="modal fade" id="pdfModal" tabindex="-1" aria-labelledby="pdfLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content" style="width: 1200px;">
+    <div class="modal-dialog modal-xl modal-fullscreen-xl-down">
+        <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="pdfLabel">New message</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -109,11 +110,11 @@
                                             <img
                                                     style="object-fit: cover; width: 200px; height:200px; float:left;"
                                                     class="rounded m-1"
-                                                    src="{{list $derivatePath (mediaUrl (list $media.Uri "/resize/formatjpeg/size240x240" | join "") "jpg") | joinSingle "/"}}"
+                                                    src="{{list $derivatePath (mediaUrl (list $media.Uri "/resize/autorotate/formatjpeg/size240x240" | join "") "jpg") | joinSingle "/"}}"
                                                     loading="lazy"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#imageModal"
-                                                    data-bs-imageurl="{{list $derivatePath (mediaUrl (list $media.Uri "/resize/formatjpeg/size800x600" | join "") "jpg") | joinSingle "/"}}"
+                                                    data-bs-imageurl="{{list $derivatePath (mediaUrl (list $media.Uri "/resize/autorotate/formatjpeg/size800x600" | join "") "jpg") | joinSingle "/"}}"
                                                     data-bs-imagetitle="#{{substr 21 31 $media.Uri}}"
                                             />
                                 {{end}}
@@ -123,7 +124,7 @@
                                         <div style="position: relative">
                                             <img
                                                     style="width: 200px; height:200px; object-fit: cover;"
-                                                    src="{{list $derivatePath (mediaUrl (list $media.Uri "$$poster/resize/formatjpeg/size240x240" | join "") "jpg") | joinSingle "/"}}"
+                                                    src="{{list $derivatePath (mediaUrl (list $media.Uri "$$poster/resize/autorotate/formatjpeg/size240x240" | join "") "jpg") | joinSingle "/"}}"
                                                     loading="lazy"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#pdfModal"
@@ -150,7 +151,7 @@
                                                         preload="auto"
                                                         width="640"
                                                         height="264"
-                                                        poster="{{list $derivatePath (mediaUrl (list $media.Uri "$$timeshot$$3/resize/formatjpeg/size640x264" | join "") "jpg") | joinSingle "/"}}"
+                                                        poster="{{list $derivatePath (mediaUrl (list $media.Uri "$$timeshot$$3/resize/autorotate/formatjpeg/size640x264" | join "") "jpg") | joinSingle "/"}}"
                                                         data-setup="{}"
                                                 >
                                                     <source src="{{list $derivatePath (mediaUrl (list $media.Uri "$$web/master" | join "") "mp4") | joinSingle "/"}}" type="video/mp4" />
@@ -167,7 +168,7 @@
                                                     {{range $shot := list "3" "8" "12" "17" "22"}}
                                                         <img
                                                                 style="height: 100px;"
-                                                                src="{{list  $derivatePath (mediaUrl (list $media.Uri "$$timeshot$$" $shot "/resize/formatjpeg/size320x132" | join "") "jpg") | joinSingle "/" }}"
+                                                                src="{{list  $derivatePath (mediaUrl (list $media.Uri "$$timeshot$$" $shot "/resize/autorotate/formatjpeg/size320x132" | join "") "jpg") | joinSingle "/" }}"
                                                                 class=""
                                                                 alt="Videoshot {{$shot}}">
                                                     {{end}}
@@ -189,7 +190,7 @@
                                                 preload="auto"
                                                 width="640"
                                                 height="264"
-                                                poster="{{list $derivatePath (mediaUrl (list $media.Uri "$$poster/resize/formatjpeg/size640x264/stretch" | join "") "jpg") | joinSingle "/"}}"
+                                                poster="{{list $derivatePath (mediaUrl (list $media.Uri "$$poster/resize/autorotate/formatjpeg/size640x264/stretch" | join "") "jpg") | joinSingle "/"}}"
                                                 data-setup="{}"
                                         >
                                             <source src="{{list $derivatePath (mediaUrl (list $media.Uri "$$web$$1/master" | join "") "m4a") | joinSingle "/"}}" type="audio/mp4" />

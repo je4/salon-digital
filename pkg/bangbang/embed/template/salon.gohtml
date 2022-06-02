@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
     <meta name="author" content="Jürgen Enge (juergen@info-age.net)">
+    <meta name="robots" content="noindex" />
     <title>Einreichungen Bang Bang</title>
 
     <!-- Bootstrap core CSS -->
@@ -76,6 +77,12 @@
             }
         }
 
+        p.help {
+            margin-bottom: 0px;
+            text-indent:-0.5em;
+            margin-left:0.5em
+        }
+
     </style>
 
 </head>
@@ -89,6 +96,23 @@
                 </div>
                 <div class="modal-body">
                     <iframe style="width: 100%;height: 97%;" src=""></iframe>
+                </div>
+                <div class="modal-footer bg-dark" data-bs-dismiss="modal">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpLabel" aria-hidden="true">
+        <div class="modal-dialog modal-large">
+            <div class="modal-content bg-dark">
+                <div class="modal-header bg-dark text-light" data-bs-dismiss="modal">
+                    <h5 class="modal-title bg-dark" id="helpLabel">Help</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
                 </div>
                 <div class="modal-footer bg-dark" data-bs-dismiss="modal">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -135,7 +159,49 @@
                                     <span  class="d-none d-lg-inline">Salon Digital</span>
                                 </a>
                             </li>
+                            {{if not .Station}}
+                                <li class="nav-item d-none d-lg-inline">
+                                    <hr />
+                                </li>
+                                <li class="nav-item d-none d-lg-inline">
+                                    <a href="https://mediathek.hgk.fhnw.ch/apply/bangbang/" class="nav-link text-white" aria-current="page">
+                                        <i class="bi bi-file-earmark-plus"></i>
+                                        Neu Einreichen
+                                    </a>
+                                </li>
+                                <li class="nav-item d-none d-lg-inline">
+                                    <a href="https://mediathek.hgk.fhnw.ch/corrbangbang/" class="nav-link text-white" aria-current="page">
+                                        <i class="bi bi-file-earmark-ruled"></i>
+                                        Korrigieren
+                                    </a>
+                                </li>
+                                <li class="nav-item d-none d-lg-inline">
+                                    <a href="https://mediathek.hgk.fhnw.ch/apply/bangbang/" class="nav-link text-white" aria-current="page">
+                                        <i class="bi bi-file-earmark-plus"></i>
+                                        New Entry
+                                    </a>
+                                </li>
+                                <li class="nav-item d-none d-lg-inline">
+                                    <a href="https://mediathek.hgk.fhnw.ch/corrbangbang/" class="nav-link text-white" aria-current="page">
+                                        <i class="bi bi-file-earmark-ruled"></i>
+                                        Correct
+                                    </a>
+                                </li>
+                            {{end}}
                         </ul>
+                        <div class="alert d-none d-lg-inline" role="alert" style="width:200px; color: #54fd53; border-color: #54fd53; margin-top: 30px;">
+                            <p class="help">Weisses Feld Richtung der Markierungen bewegen</p>
+                            <p class="help">Click once to visit the detail view</p>
+                            <p class="help">Cliquez en direction du champ marqué pour déplacer votre carré blanc</p>
+                            <hr>
+                            <p class="help">1x Klicken zur Detailseite</p>
+                            <p class="help">Click once for details</p>
+                            <p class="help">Cliquez une fois pour accéder à la vue détaillée</p>
+                            <hr>
+                            <p class="help">Reload rechts oben (BB-Logo)</p>
+                            <p class="help">Reload with the BB-icon on the upper right</p>
+                            <p class="help">Rechargez avec BangBang logo en haut à droite</p>
+                        </div>
                     </div>
                 </div>
                 <div class="col-sm p-3 text-white rounded bg-dark overflow-auto content-height">
