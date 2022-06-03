@@ -34,9 +34,10 @@ type BangBang struct {
 	salonUrl   *url.URL
 	listUrl    *url.URL
 	gridUrl    *url.URL
+	salonZoom  float64
 }
 
-func NewBangBang(index bleve.Index, urlExt *url.URL, dataUrl *url.URL, collagePos map[string][]image.Rectangle, templateFS fs.FS, logger *logging.Logger, station, dev bool) (*BangBang, error) {
+func NewBangBang(index bleve.Index, urlExt *url.URL, dataUrl *url.URL, collagePos map[string][]image.Rectangle, templateFS fs.FS, salonZoom float64, logger *logging.Logger, station, dev bool) (*BangBang, error) {
 	b := &BangBang{
 		index:      index,
 		urlExt:     urlExt,
@@ -47,6 +48,7 @@ func NewBangBang(index bleve.Index, urlExt *url.URL, dataUrl *url.URL, collagePo
 		dev:        dev,
 		templateFS: templateFS,
 		templates:  map[string]*template.Template{},
+		salonZoom:  salonZoom,
 	}
 	var err error
 	b.salonUrl, err = b.urlExt.Parse("salon/")
@@ -341,19 +343,21 @@ func (bb *BangBang) SalonHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data := struct {
-		DataDir  string
-		PanoUrl  string
-		SalonUrl string
-		ListUrl  string
-		GridUrl  string
-		Station  bool
+		DataDir   string
+		PanoUrl   string
+		SalonUrl  string
+		ListUrl   string
+		GridUrl   string
+		Station   bool
+		SalonZoom float64
 	}{
-		SalonUrl: bb.salonUrl.String(),
-		ListUrl:  bb.listUrl.String(),
-		GridUrl:  bb.gridUrl.String(),
-		DataDir:  bb.dataUrl.String(),
-		PanoUrl:  bb.panoUrl.String(),
-		Station:  bb.station,
+		SalonUrl:  bb.salonUrl.String(),
+		ListUrl:   bb.listUrl.String(),
+		GridUrl:   bb.gridUrl.String(),
+		DataDir:   bb.dataUrl.String(),
+		PanoUrl:   bb.panoUrl.String(),
+		Station:   bb.station,
+		SalonZoom: bb.salonZoom,
 	}
 	if err := tpl.Execute(w, data); err != nil {
 		bb.logger.Errorf("cannot execute template: %v", err)

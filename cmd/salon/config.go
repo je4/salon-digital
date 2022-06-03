@@ -20,11 +20,12 @@ func (d *duration) UnmarshalText(text []byte) error {
 }
 
 type SalonConfig struct {
-	TemplateDev    bool   `toml:"templatedev"`
-	TemplateDir    string `toml:"templatedir"`
-	StaticDir      string `toml:"staticdir"`
-	PictureFSImage string `toml:"picturefsimage"`
-	PictureFSJSON  string `toml:"picturefsjson"`
+	TemplateDev    bool    `toml:"templatedev"`
+	TemplateDir    string  `toml:"templatedir"`
+	StaticDir      string  `toml:"staticdir"`
+	PictureFSImage string  `toml:"picturefsimage"`
+	PictureFSJSON  string  `toml:"picturefsjson"`
+	Zoom           float64 `toml:"zoom"`
 }
 
 type BangConfig struct {
@@ -33,25 +34,27 @@ type BangConfig struct {
 }
 
 type SalonDigitalConfig struct {
-	CertPem        string      `toml:"certpem"`
-	KeyPem         string      `toml:"keypem"`
-	LogFile        string      `toml:"logfile"`
-	LogLevel       string      `toml:"loglevel"`
-	LogFormat      string      `toml:"logformat"`
-	AccessLog      string      `toml:"accesslog"`
-	BaseDir        string      `toml:"basedir"`
-	DataDir        string      `toml:"datadir"`
-	BleveIndex     string      `toml:"bleveindex"`
-	Addr           string      `toml:"addr"`
-	AddrExt        string      `toml:"addrext"`
-	User           string      `toml:"user"`
-	Password       string      `toml:"password"`
-	Salon          SalonConfig `toml:"salon"`
-	Browser        bool        `toml:"browser"`
-	BrowserTimeout duration    `toml:"browsertimeout"`
-	BrowserURL     string      `toml:"browserurl"`
-	Bang           BangConfig  `toml:"bang"`
-	Station        bool
+	CertPem             string      `toml:"certpem"`
+	KeyPem              string      `toml:"keypem"`
+	LogFile             string      `toml:"logfile"`
+	LogLevel            string      `toml:"loglevel"`
+	LogFormat           string      `toml:"logformat"`
+	AccessLog           string      `toml:"accesslog"`
+	BaseDir             string      `toml:"basedir"`
+	DataDir             string      `toml:"datadir"`
+	BleveIndex          string      `toml:"bleveindex"`
+	Addr                string      `toml:"addr"`
+	AddrExt             string      `toml:"addrext"`
+	User                string      `toml:"user"`
+	Password            string      `toml:"password"`
+	Salon               SalonConfig `toml:"salon"`
+	Browser             bool        `toml:"browser"`
+	BrowserTimeout      duration    `toml:"browsertimeout"`
+	BrowserURL          string      `toml:"browserurl"`
+	Bang                BangConfig  `toml:"bang"`
+	Station             bool
+	StationStartTimeout duration
+	BrowserTaskDelay    duration
 }
 
 func LoadSalonDigitalConfig(fp string, conf *SalonDigitalConfig) error {

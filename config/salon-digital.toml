@@ -4,19 +4,20 @@
 #addr = "localhost:84"
 #addrext = "https://localhost/"
 browser = false
+station = false
 browserTimeout = "5m"
 browserURL = "http://localhost:8088/digitale-see/"
 user = ""
 password = ""
 datadir = "c:/temp/bangbang"
 bleveindex = "c:/temp/bangbang/bangbang.bleve"
-station = false
 [salon]
 picturefsimage = "./pkg/salon/embed/pfsEmbed/salon-digital.png"
 picturefsjson = "./pkg/salon/embed/pfsEmbed/salon-digital.json"
 staticdir = "./pkg/salon/embed/static"
 templatedir = "./pkg/salon/embed/template"
 templatedev = true
+zoom = 1.2
 [bang]
 templatedir = "./pkg/bangbang/embed/template"
 templatedev = true

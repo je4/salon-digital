@@ -27,14 +27,16 @@ type BrowserControl struct {
 	lastLogMutex  sync.RWMutex
 	stop          chan any
 	allowedPrefix string
+	taskDelay     time.Duration
 }
 
-func NewBrowserControl(allowedPrefix string, homeUrl *url.URL, opts map[string]any, timeout time.Duration, logger *logging.Logger) (*BrowserControl, error) {
+func NewBrowserControl(allowedPrefix string, homeUrl *url.URL, opts map[string]any, timeout, taskDelay time.Duration, logger *logging.Logger) (*BrowserControl, error) {
 	bc := &BrowserControl{
 		allowedPrefix: allowedPrefix,
 		homeUrl:       homeUrl,
 		opts:          opts,
 		timeout:       int64(timeout.Seconds()),
+		taskDelay:     taskDelay,
 		logger:        logger,
 	}
 	return bc, nil
@@ -88,6 +90,7 @@ func (bc *BrowserControl) Start() error {
 		//		browser.MouseClickXYAction(2,2),
 		fetch.Disable(),
 	}
+	time.Sleep(bc.taskDelay)
 	err = bc.browser.Tasks(tasks)
 	if err != nil {
 		bc.logger.Errorf("could not navigate: %v", err)

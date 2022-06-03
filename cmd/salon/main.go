@@ -41,26 +41,29 @@ func main() {
 	flag.Parse()
 
 	var config = &SalonDigitalConfig{
-		LogFile:        "",
-		LogLevel:       "DEBUG",
-		LogFormat:      `%{time:2006-01-02T15:04:05.000} %{module}::%{shortfunc} [%{shortfile}] > %{level:.5s} - %{message}`,
-		BaseDir:        *basedir,
-		DataDir:        exPath,
-		Addr:           "localhost:8088",
-		AddrExt:        "http://localhost:8088/",
-		BrowserURL:     "http://localhost:8088/digitale-see/",
-		BrowserTimeout: duration{Duration: time.Minute * 5},
-		User:           "",
-		Password:       "",
-		Browser:        true,
-		Station:        true,
-		BleveIndex:     filepath.Join(exPath, "bangbang.bleve"),
+		LogFile:             "",
+		LogLevel:            "DEBUG",
+		LogFormat:           `%{time:2006-01-02T15:04:05.000} %{module}::%{shortfunc} [%{shortfile}] > %{level:.5s} - %{message}`,
+		BaseDir:             *basedir,
+		DataDir:             exPath,
+		Addr:                "localhost:8088",
+		AddrExt:             "http://localhost:8088/",
+		BrowserURL:          "http://localhost:8088/digitale-see/",
+		BrowserTimeout:      duration{Duration: time.Minute * 5},
+		User:                "",
+		Password:            "",
+		Browser:             true,
+		BrowserTaskDelay:    duration{Duration: time.Second * 2},
+		Station:             true,
+		StationStartTimeout: duration{Duration: time.Second * 20},
+		BleveIndex:          filepath.Join(exPath, "bangbang.bleve"),
 		Salon: SalonConfig{
 			TemplateDev:    false,
 			TemplateDir:    "",
 			StaticDir:      "",
 			PictureFSImage: "",
 			PictureFSJSON:  "",
+			Zoom:           1.0,
 		},
 		Bang: BangConfig{
 			TemplateDev: false,
@@ -87,6 +90,11 @@ func main() {
 		}
 		defer f.Close()
 		accessLog = f
+	}
+
+	if config.Station {
+		logger.Infof("sleeping %s...", config.StationStartTimeout.Duration.String())
+		time.Sleep(config.StationStartTimeout.Duration)
 	}
 
 	urlExt, err := url.Parse(config.AddrExt)
@@ -146,7 +154,7 @@ func main() {
 	if err != nil {
 		logger.Panicf("cannot parse url %s -> %s: %v", urlExt.String(), "data", err)
 	}
-	bb, err := bangbang.NewBangBang(index, urlExt, dataUrl, collagePos, bangTemplateFS, logger, config.Station, config.Bang.TemplateDev)
+	bb, err := bangbang.NewBangBang(index, urlExt, dataUrl, collagePos, bangTemplateFS, config.Salon.Zoom, logger, config.Station, config.Bang.TemplateDev)
 	if err != nil {
 		logger.Panicf("cannot instantiate bangbang: %v", err)
 	}
@@ -231,6 +239,7 @@ func main() {
 	var b *browserControl.BrowserControl
 
 	if config.Browser {
+		time.Sleep(time.Second * 1)
 		opts := map[string]any{
 			"headless":                            false,
 			"start-fullscreen":                    true,
@@ -257,10 +266,11 @@ func main() {
 		if err != nil {
 			logger.Panicf("cannot parse %s: %v", config.AddrExt, err)
 		}
-		b, err = browserControl.NewBrowserControl(config.AddrExt, homeUrl, opts, config.BrowserTimeout.Duration, logger)
+		b, err = browserControl.NewBrowserControl(config.AddrExt, homeUrl, opts, config.BrowserTimeout.Duration, config.BrowserTaskDelay.Duration, logger)
 		if err != nil {
 			logger.Panicf("cannot create browser control: %v", err)
 		}
+		time.Sleep(time.Millisecond * 500)
 		b.Start()
 	}
 
