@@ -101,8 +101,11 @@
                 <div class="border rounded m-1 p-1">
                     {{/* Keine Uploads */}}
                     {{if eq (len .Item.Media) 0}}
-                        <h2 class="display-6 text-center mb-4">Es wurden keine Medien hochgeladen</h2>
+                        <h2 class="display-6 text-center mb-4">Es wurden keine Medien hochgeladen<br />
+                        No media availablea<br />
+                        Aucun média disponible</h2>
                     {{end}}
+                    {{if (and (not .Station) (not .ContentOnline))}}<h2 class="display-6 text-center mb-4">Unsufficient Rights</h2>{{else}}
                     <div class="d-flex flex-wrap justify-content-center">
                     {{range $type,$medias := .Item.Media }}
                         {{if eq $type "image"}}
@@ -206,7 +209,7 @@
                             {{end}}
                         {{end}}
                     {{end}}
-
+                    {{end}}
                 </div>
             </div>
             <div class="col-4">

@@ -195,6 +195,7 @@ func main() {
 		salonTemplateFS,
 		config.Salon.TemplateDev,
 		pfs,
+		!config.Station,
 		logger,
 	)
 	if err != nil {

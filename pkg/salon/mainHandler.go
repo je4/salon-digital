@@ -27,11 +27,13 @@ func (s *Salon) MainHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := tpl.Execute(w, struct {
-		BaseAddr string
-		Lab      *Labyrinth
+		BaseAddr   string
+		Lab        *Labyrinth
+		Responsive bool
 	}{
-		BaseAddr: strings.TrimRight(s.addrExt, "/") + "/" + strings.Trim(s.pathPrefix, "/") + "/",
-		Lab:      lab,
+		BaseAddr:   strings.TrimRight(s.addrExt, "/") + "/" + strings.Trim(s.pathPrefix, "/") + "/",
+		Lab:        lab,
+		Responsive: s.responsive,
 	}); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(fmt.Sprintf("%v", err)))

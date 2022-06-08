@@ -22,9 +22,10 @@ type Salon struct {
 	templateDev  bool
 	pathPrefix   string
 	addrExt      string
+	responsive   bool
 }
 
-func NewSalon(works map[string]*Work, addrExt string, staticFS, templateFS fs.FS, templateDev bool, imageFS fs.FS, log *logging.Logger) (*Salon, error) {
+func NewSalon(works map[string]*Work, addrExt string, staticFS, templateFS fs.FS, templateDev bool, imageFS fs.FS, responsive bool, log *logging.Logger) (*Salon, error) {
 	s := &Salon{
 		addrExt:      addrExt,
 		works:        works,
@@ -33,6 +34,7 @@ func NewSalon(works map[string]*Work, addrExt string, staticFS, templateFS fs.FS
 		templateDev:  templateDev,
 		staticFS:     staticFS,
 		imageFS:      imageFS,
+		responsive:   responsive,
 		log:          log,
 	}
 	return s, s.initTemplates()

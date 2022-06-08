@@ -376,7 +376,12 @@ func (bb *BangBang) HomeHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "cannot find document.gohtml", http.StatusInternalServerError)
 		return
 	}
+	lang := strings.ToLower(r.URL.Query().Get("lang"))
+	if lang != "en" && lang != "fr" {
+		lang = "de"
+	}
 	data := struct {
+		Lang     string
 		DataDir  string
 		PanoUrl  string
 		SalonUrl string
@@ -384,6 +389,7 @@ func (bb *BangBang) HomeHandler(w http.ResponseWriter, r *http.Request) {
 		GridUrl  string
 		Station  bool
 	}{
+		Lang:     lang,
 		SalonUrl: bb.salonUrl.String(),
 		ListUrl:  bb.listUrl.String(),
 		GridUrl:  bb.gridUrl.String(),
@@ -446,6 +452,16 @@ func (bb *BangBang) DocumentHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("cannot get work #%s", signature), http.StatusNotFound)
 		return
 	}
+	contentOnline := false
+	acl_content, ok := src.ACL["content"]
+	if ok {
+		contentOnline = len(acl_content) > 1
+		for _, acl := range acl_content {
+			if acl == "global/guest" {
+				contentOnline = true
+			}
+		}
+	}
 
 	tpl, ok := bb.templates["document.gohtml"]
 	if !ok {
@@ -453,13 +469,15 @@ func (bb *BangBang) DocumentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data := struct {
-		Item    *search.SourceData
-		DataDir string
-		Station bool
+		Item          *search.SourceData
+		DataDir       string
+		Station       bool
+		ContentOnline bool
 	}{
-		Item:    src,
-		DataDir: bb.dataUrl.String(),
-		Station: bb.station,
+		Item:          src,
+		DataDir:       bb.dataUrl.String(),
+		Station:       bb.station,
+		ContentOnline: contentOnline,
 	}
 	if err := tpl.Execute(w, data); err != nil {
 		bb.logger.Errorf("cannot execute template: %v", err)

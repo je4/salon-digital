@@ -16,9 +16,10 @@
 
         {{- $middle := div (sub $labsize 1) 2}}
         /* 3x3 Matrix */
-        @media (max-width: 1000px) {
         {{- $min := sub $middle 2}}
         {{- $max := add $min 4}}
+        {{- if .Responsive}}
+        @media (max-width: 1000px) {
             /* {{$middle}} {{$min}} {{$max}} */
         {{- range $i := (iterate $labsize)}}
         {{- range $j := (iterate $labsize)}}
@@ -42,10 +43,13 @@
         {{- end}}
         {{- end}}
         }
+        {{end}}
         /* 5x5 Matrix */
-        @media (min-width: 1000px) {
         {{- $min = sub $middle 3}}
         {{- $max = add $min 6}}
+        {{- if .Responsive}}
+        @media (min-width: 1000px) {
+        {{end}}
             /* {{$middle}} {{$min}} {{$max}} */
         {{- range $i := (iterate $labsize)}}
         {{- range $j := (iterate $labsize)}}
@@ -69,8 +73,9 @@
 
         {{- end}}
         {{- end}}
+        {{- if .Responsive}}
         }
-
+        {{end}}
     </style>
 </head>
 <body>

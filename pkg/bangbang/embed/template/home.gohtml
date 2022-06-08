@@ -133,45 +133,55 @@
             <div class="col-sm p-3 text-white rounded bg-dark overflow-auto content-height">
                 <!-- start content -->
 
-                <h1 class="display-4 fst-italic">BANG BANG – translokale Performance Geschichte:n<br />
-                    8. Juni 2022 – 21. August 2022</h1>
+                {{if eq .Lang "de"}}
+                <!--
+                  -- BEGIN Sprache: Deutsch
+                  -->
+                <h1 class="display-4 fst-italic">Sichtungsstationen zur Ausstellung<br />
+                    «BANG BANG – translokale Performance Geschichte:n»<br />
+                    8. Juni 2022 – 21. August 2022, Museum Tinguely Basel
+                </h1>
+                <p class="text-end">DE / <a href="?lang=en">EN</a> / <a href="?lang=fr">FR</a></p>
                 <p class="font-monospace">
-                    ein Ausstellungsprojekt von Revolving Histories/Performance
-                    Chronik Basel und Museum Tinguely
+                    Die vorliegende Website macht die Sichtungsstationen zur Ausstellung «BANG BANG – translokale
+                    Performance Geschichte:n» über das Internet einsehbar. Konzipiert für die grossen Bildschirme der
+                    Recherchestationen vor Ort, wird die umfangreiche Datenbasis so öffentlich einsehbar.
                 </p>
                 <p class="font-monospace">
-                    Aufzeigen von Zusammenhängen informeller Netzwerke, der
-                    Diversität von Strömungen und Haltungen und den vielfältigen
-                    und differenten Erzählungen von Performance Geschichten. Dabei
-                    geht es um aktuelle Fragen der Performance Kunst, was passiert
-                    heute und wie wollen wir Performance Kunst in die Zukunft
-                    denken.
-                </p>
-                <h2 class="font-monospace">
-                    Performance Ausstellung im Museum Tinguely
-                </h2>
-                <p class="font-monospace">
-                    Die Performance Ausstellung BANG BANG findet vom Juni bis
-                    August 2022 im Museum Tinguely statt. Dabei stehen sieben
-                    Themenfelder im Fokus.
+                    Hinter den Interfaces <i class="bi bi-grid-3x3-gap-fill"></i> <a href="{{$data.GridUrl}}">GRID</a>,
+                    <i class="bi bi-list-ul"></i> <a href="{{$data.ListUrl}}">LISTE</a>,
+                    <i class="bi bi-grid-3x3"></i> <a href="{{$data.PanoUrl}}">DIGITALE SEE</a> und
+                    <img style="width:17px; padding-bottom: 3px;" src="{{list $data.DataDir "img" "sdmllogo.png" | joinSingle "/"}}">
+                    <a href="{{$data.SalonUrl}}">SALON DIGITAL</a>
+                    warten zum
+                    Ausstellungsbeginn am 8. Juni 2022 über 1’680 Einträge mit Dokumentationen zu einzelnen
+                    Performances aber auch ganzen Festivals, Ausstellungen, Performanceanlässen und Interviews darauf,
+                    entdeckt, erkundet, ergänzt und vielleicht auch korrigiert zu werden. Die jeweiligen Funktionen
+                    sind über die Navigationselemente am linken Bildrand zugänglich.
                 </p>
                 <p class="font-monospace">
-                <ol>
-                    <li>Saga (Blick zurück)</li>
-                    <li>Ausbruch aus den Medien (ästhetische Praxen)</li>
-                    <li>Zur radikalen Gleichwertigkeit von Erfahrungen
-                        (Queer/Choreopolitics)</li>
-                    <li>Flüchtige Tat (Politik/Feminismus)</li>
-                    <li>Soziale Eleganz (Freundschaft, Szenen, Netzwerke)</li>
-                    <li>Direktübertragung (Situation/Rezeption)</li>
-                    <li>Freckly Night (Schillernde Momente zwischen Vergangenheit
-                        und Zukunft)</li>
-                </ol>
+                    Die Datenbasis wurde von über 350 Akteurinnen und Akteuren der Schweizer Performanceszenen
+                    zusammengetragen. In enger Zusammenarbeit mit ca. 2'000 Künstlerinnen, Künstlern und Kollektiven,
+                    Veranstalterinnen und Veranstaltern, Dokumentierenden und vielen Weiteren wurden 12'716 Bilder,
+                    753 Dokumente im PDF-Format, 1’104 Videos im Umfang von ca. 248 Stunden sowie 27 Audiodateien von
+                    über 8 Stunden eingesammelt und über ein Webformular eingespeist. Die Datenbasis ist dynamisch.
+                    So können noch immer <i class="bi bi-file-earmark-plus"></i>
+                    <a href="https://mediathek.hgk.fhnw.ch/apply/bangbang/">neue Einträge gemacht</a> oder eben
+                    <i class="bi bi-file-earmark-ruled"></i> <a href="https://mediathek.hgk.fhnw.ch/corrbangbang/">Korrekturen vorgeschlagen</a> und eingereicht werden.
+                </p>
+                <p class="font-monospace">
+                    Das Datenmanagement und die Pflege der Datenbasis wird von der Mediathek der Hochschule für
+                    Gestaltung und Kunst FHNW Basel in Zusammenarbeit mit info-age und dem kuratorischen Team von
+                    BANG BANG realisiert.
+                </p>
+                <p class="font-monospace">
+                    <i class="bi bi-arrow-right"></i> <a href="https://www.tinguely.ch/de/ausstellungen/ausstellungen/2022/bangbang.html">Hier geht’s zur Ausstellungswebsite</a><br />
+                    <i class="bi bi-arrow-right"></i> <a href="https://irf.fhnw.ch/bitstream/handle/11654/33513/bb.pdf">Kurze Beschreibung der vier Recherchesichten</a>
                 </p>
                 <p class="font-monospace">
                     <span class="fw-bold">Konzeption/Realisation:</span> Lena Eriksson, Muda Mathis, Chris Regn, Andrea
                     Saemann<br />
-                    <span class="fw-bold">Projektpartner:</span> Museum Tinguely, Basel, www.tinguely.ch
+                    <span class="fw-bold">Projektpartner:</span> <a href="https://www.tinguely.ch">Museum Tinguely, Basel</a>,
                     Séverine Fromaigeat (Museum Tinguely), Kuratorin für das internationale
                     Performanceprogramm<br />
                     <span class="fw-bold">Erweitertes Projektteam:</span> Sabine Gebhardt Fink, Tancredi Gusman, Deirdre
@@ -209,7 +219,188 @@
                     Correct
                 </a>
             </div>
-                <!-- end content -->
+            <!--
+              -- END Sprache: Deutsch
+              -->
+            {{end}}
+            {{if eq .Lang "fr"}}
+                <!--
+                  -- BEGIN Sprache: Franz
+                  -->
+            <h1 class="display-4 fst-italic">Stations de visionnage pour l’exposition<br />
+                « BANG BANG - histoire:s translocale:s de la performance »<br />
+                8 juin – 21 août 2022, Musée Tinguely Bâle
+            </h1>
+            <p class="text-end"><a href="?lang=de">DE</a> / <a href="?lang=en">EN</a> / FR</p>
+            <p class="font-monospace">
+                Ce site permet de consulter les stations de recherche de l'exposition « BANG BANG - histoire:s
+                translocale:s de la performance » sur Internet. Conçue pour les grands écrans des stations de visionnage
+                sur place, la vaste base de données est ainsi accessible au public.
+            </p>
+            <p class="font-monospace">
+                Derrière les interfaces <i class="bi bi-grid-3x3-gap-fill"></i> <a href="{{$data.GridUrl}}">GRID</a>,
+                <i class="bi bi-list-ul"></i> <a href="{{$data.ListUrl}}">LISTE</a>,
+                <i class="bi bi-grid-3x3"></i> <a href="{{$data.PanoUrl}}">DIGITALE SEE</a> et
+                <img style="width:17px; padding-bottom: 3px;" src="{{list $data.DataDir "img" "sdmllogo.png" | joinSingle "/"}}">
+                <a href="{{$data.SalonUrl}}">SALON DIGITAL</a>
+                , plus de 1.680 entrées avec des documentations sur des performances individuelles mais aussi sur des
+                festivals entiers, des expositions, des événements de performance et des interviews attendent d'être
+                découvertes, explorées, complétées et peut-être aussi. Les fonctions respectives sont accessibles via
+                les éléments de navigation sur le bord gauche de l'écran.
+            </p>
+            <p class="font-monospace">
+                La base de données a été rassemblée par plus de 350 actrices et acteurs des scènes suisses de la
+                performance. En étroite collaboration avec environ 2.000 artistes et collectifs, organisateurs,
+                documentalistes et bien d'autres, 12.716 images, 753 documents en format PDF, 1.104 vidéos d'une durée
+                d'environ 248 heures ainsi que 27 fichiers audio de plus de 8 heures ont été collectés et introduits via
+                un formulaire web. La base de données est dynamique : il est donc toujours possible de faire de
+                <i class="bi bi-file-earmark-plus"></i>
+                <a href="https://mediathek.hgk.fhnw.ch/apply/bangbang/">nouvelles entrées</a> ou
+                <i class="bi bi-file-earmark-ruled"></i> <a href="https://mediathek.hgk.fhnw.ch/corrbangbang/">justement
+                    de proposer</a> et de soumettre des corrections.
+            </p>
+            <p class="font-monospace">
+                La gestion et l'entretien de la base de données sont réalisés par la médiathèque de l'Académie d'Art et
+                de Design FHNW de Bâle, en collaboration avec info-age et l'équipe de BANG BANG.
+            </p>
+            <p class="font-monospace">
+                <i class="bi bi-arrow-right"></i> <a href="https://www.tinguely.ch/de/ausstellungen/ausstellungen/2022/bangbang.html">Voici le lien vers le site de l'exposition</a><br />
+                <i class="bi bi-arrow-right"></i> <a href="https://irf.fhnw.ch/bitstream/handle/11654/33513/bb.pdf">Brève description des quatre récits de recherche (en allemand)</a>
+            </p>
+            <p class="font-monospace">
+                <span class="fw-bold">Conception/Réalisation:</span> Lena Eriksson, Muda Mathis, Chris Regn, Andrea
+                Saemann<br />
+                <span class="fw-bold">Partenaires du projet:</span> <a href="https://www.tinguely.ch">Museum Tinguely, Basel</a>,
+                Séverine Fromaigeat (Museum Tinguely), Kuratorin für das internationale
+                Performanceprogramm<br />
+                <span class="fw-bold">Équipe de projet élargie:</span> Sabine Gebhardt Fink, Tancredi Gusman, Deirdre
+                O’Leary, Dorothea Rust, Margarit von Büren<br />
+                <span class="fw-bold">Équipe de la recherche élargie:</span> Madeleine Amsler, Pascale Grau, Gisela Hochuli,
+                Judith Huber, Marie-Ève Knoerle<br />
+                <span class="fw-bold">Partenaire de collaboration:</span>
+                <span class="badge bg-secondary"><a href="https://panch.li/">PANCH – Performance Art Netzwerk CH | Soziale Eleganz</a></span>
+                <span class="badge bg-secondary"><a href="https://mediathek.hgk.fhnw.ch">Mediathek HGK FHNW | Tabea Lurk</a></span>
+                <span class="badge bg-secondary"><a href="https://ch.linkedin.com/in/j%C3%BCrgen-enge-287873">info-age GmbH | Jürgen Enge</a></span>
+                <span class="badge bg-secondary"><a href="https://de.wikipedia.org/wiki/Wikipedia:WikiProjekt_Schweiz/Atelier">Wikimedia Schweiz</a></span>
+                <span class="badge bg-secondary"><a href="https://www.hslu.ch/de-ch/design-kunst">HSLU, Master Fine Arts, Berufsfeldpraxis | Lena Eriksson</a></span>
+                <span class="badge bg-secondary"><a href="http://www.master-kunst-luzern.ch/2022/04/revolving-documents/">HSLU, Networking Performance Art Histories | Sabine Gebhardt Fink</a></span>
+                <span class="badge bg-secondary"><a href="https://www.hkb.bfh.ch/de/studium/master/contemporary-arts-practice/">HKB, Master of Arts, Contemporary Arts Practice | Valerian Maly</a></span>
+                <span class="badge bg-secondary"><a href="https://lumpenstation.art/info">Lumpen Station | Radioshow | Andrea Marioni, Mathilde Beetschen, Ivan Chrichton, Luke Archer</a></span>
+                <span class="badge bg-secondary"><a href="https://whowriteshistory.me/">who writes his_tory & Guter Grund</a></span>
+                <span class="badge bg-secondary"><a href="http://existenzundprodukt.ch/">Existenz und Produkt | das Verlagswesen für Künstlerinnen*</a></span>
+                <br />
+                <span class="fw-bold">Trägerschaft</span> <a href="http://www.performancechronikbasel.ch/">Verein Performance Chronik Basel</a><br />
+            </p>
+            <a href="https://mediathek.hgk.fhnw.ch/apply/bangbang/" class="nav-link text-white d-lg-none" aria-current="page">
+                <i class="bi bi-file-earmark-plus"></i>
+                Soumettre à nouveau
+            </a>
+            <a href="https://mediathek.hgk.fhnw.ch/corrbangbang/" class="nav-link text-white d-lg-none" aria-current="page">
+                <i class="bi bi-file-earmark-ruled"></i>
+                Remettre
+            </a>
+            <a href="https://mediathek.hgk.fhnw.ch/apply/bangbang/" class="nav-link text-white d-lg-none" aria-current="page">
+                <i class="bi bi-file-earmark-plus"></i>
+                New Entry
+            </a>
+            <a href="https://mediathek.hgk.fhnw.ch/corrbangbang/" class="nav-link text-white d-lg-none" aria-current="page">
+                <i class="bi bi-file-earmark-ruled"></i>
+                Correct
+            </a>
+        </div>
+
+                <!--
+                  -- END Sprache: Franz
+                  -->
+            {{end}}
+            {{if eq .Lang "en"}}
+                <!--
+                  -- BEGIN Sprache: English
+                  -->
+        <h1 class="display-4 fst-italic">Viewing Stations for the exhibition <br />
+            «BANG BANG - translocal hi:stories of performance art»<br />
+            June 8th 2022 –August 21st 2022, Museum Tinguely Basel
+        </h1>
+        <p class="text-end"><a href="?lang=de">DE</a> / EN / <a href="?lang=fr">FR</a></p>
+        <p class="font-monospace">
+            This website gives access to the viewing stations of the exhibition «BANG BANG - translocal performance
+            hi:stories» via the Internet. Designed for the large screens in the exhibition context, an extensive
+            collection of digital resources becomes publicly available.
+        </p>
+        <p class="font-monospace">
+            Behind the interfaces <i class="bi bi-grid-3x3-gap-fill"></i> <a href="{{$data.GridUrl}}">GRID</a>,
+            <i class="bi bi-list-ul"></i> <a href="{{$data.ListUrl}}">LISTE</a>,
+            <i class="bi bi-grid-3x3"></i> <a href="{{$data.PanoUrl}}">DIGITALE SEE</a> and
+            <img style="width:17px; padding-bottom: 3px;" src="{{list $data.DataDir "img" "sdmllogo.png" | joinSingle "/"}}">
+            <a href="{{$data.SalonUrl}}">SALON DIGITAL</a>
+            (left side), more than 1,680 entries with documents on individual performances but also entire festivals,
+            exhibitions, performance events and interviews are waiting to be discovered, explored, supplemented and
+            perhaps also corrected. The respective functions can be accessed via the navigation elements on the left
+            edge of the screen.
+        </p>
+        <p class="font-monospace">
+            The database was compiled by over 350 protagonists of the Swiss performance art scenes. In close collaboration
+            with around 2.000 artists and collectives, organisers, documenters and many others, 12.716 images, 753
+            documents in PDF format, 1.104 videos amounting to around 248 hours and 27 audio files of over 8 hours were
+            collected and uploaded via a web form. The database is dynamic: <i class="bi bi-file-earmark-plus"></i>
+            <a href="https://mediathek.hgk.fhnw.ch/apply/bangbang/">new entries</a> can still be made or
+            <i class="bi bi-file-earmark-ruled"></i> <a href="https://mediathek.hgk.fhnw.ch/corrbangbang/">corrections</a>
+            be suggested and submitted.
+        </p>
+        <p class="font-monospace">
+            DThe management and maintenance of the database is realised by the Media Library at the FHNW Academy of Art
+            and Design Basel in collaboration with info-age and the curatorial team of BANG BANG.
+        </p>
+        <p class="font-monospace">
+            <i class="bi bi-arrow-right"></i> <a href="https://www.tinguely.ch/de/ausstellungen/ausstellungen/2022/bangbang.html">Click here for the exhibition website</a><br />
+            <i class="bi bi-arrow-right"></i> <a href="https://irf.fhnw.ch/bitstream/handle/11654/33513/bb.pdf">Short description of the four research reports (german only)</a>
+        </p>
+        <p class="font-monospace">
+            <span class="fw-bold">Conception/Realization:</span> Lena Eriksson, Muda Mathis, Chris Regn, Andrea
+            Saemann<br />
+            <span class="fw-bold">Project partner:</span> <a href="https://www.tinguely.ch">Museum Tinguely, Basel</a>,
+            Séverine Fromaigeat (Museum Tinguely), Kuratorin für das internationale
+            Performanceprogramm<br />
+            <span class="fw-bold">Expanded Project Team:</span> Sabine Gebhardt Fink, Tancredi Gusman, Deirdre
+            O’Leary, Dorothea Rust, Margarit von Büren<br />
+            <span class="fw-bold">Expanded Research Team:</span> Madeleine Amsler, Pascale Grau, Gisela Hochuli,
+            Judith Huber, Marie-Ève Knoerle<br />
+            <span class="fw-bold">Collaboration partner:</span>
+            <span class="badge bg-secondary"><a href="https://panch.li/">PANCH – Performance Art Netzwerk CH | Soziale Eleganz</a></span>
+            <span class="badge bg-secondary"><a href="https://mediathek.hgk.fhnw.ch">Mediathek HGK FHNW | Tabea Lurk</a></span>
+            <span class="badge bg-secondary"><a href="https://ch.linkedin.com/in/j%C3%BCrgen-enge-287873">info-age GmbH | Jürgen Enge</a></span>
+            <span class="badge bg-secondary"><a href="https://de.wikipedia.org/wiki/Wikipedia:WikiProjekt_Schweiz/Atelier">Wikimedia Schweiz</a></span>
+            <span class="badge bg-secondary"><a href="https://www.hslu.ch/de-ch/design-kunst">HSLU, Master Fine Arts, Berufsfeldpraxis | Lena Eriksson</a></span>
+            <span class="badge bg-secondary"><a href="http://www.master-kunst-luzern.ch/2022/04/revolving-documents/">HSLU, Networking Performance Art Histories | Sabine Gebhardt Fink</a></span>
+            <span class="badge bg-secondary"><a href="https://www.hkb.bfh.ch/de/studium/master/contemporary-arts-practice/">HKB, Master of Arts, Contemporary Arts Practice | Valerian Maly</a></span>
+            <span class="badge bg-secondary"><a href="https://lumpenstation.art/info">Lumpen Station | Radioshow | Andrea Marioni, Mathilde Beetschen, Ivan Chrichton, Luke Archer</a></span>
+            <span class="badge bg-secondary"><a href="https://whowriteshistory.me/">who writes his_tory & Guter Grund</a></span>
+            <span class="badge bg-secondary"><a href="http://existenzundprodukt.ch/">Existenz und Produkt | das Verlagswesen für Künstlerinnen*</a></span>
+            <br />
+            <span class="fw-bold">Trägerschaft</span> <a href="http://www.performancechronikbasel.ch/">Verein Performance Chronik Basel</a><br />
+        </p>
+        <a href="https://mediathek.hgk.fhnw.ch/apply/bangbang/" class="nav-link text-white d-lg-none" aria-current="page">
+            <i class="bi bi-file-earmark-plus"></i>
+            Neu Einreichen
+        </a>
+        <a href="https://mediathek.hgk.fhnw.ch/corrbangbang/" class="nav-link text-white d-lg-none" aria-current="page">
+            <i class="bi bi-file-earmark-ruled"></i>
+            Korrigieren
+        </a>
+        <a href="https://mediathek.hgk.fhnw.ch/apply/bangbang/" class="nav-link text-white d-lg-none" aria-current="page">
+            <i class="bi bi-file-earmark-plus"></i>
+            New Entry
+        </a>
+        <a href="https://mediathek.hgk.fhnw.ch/corrbangbang/" class="nav-link text-white d-lg-none" aria-current="page">
+            <i class="bi bi-file-earmark-ruled"></i>
+            Correct
+        </a>
+    </div>
+                <!--
+                  -- END Sprache: English
+                  -->
+            {{end}}
+            <!-- end content -->
             </div>
         </div>
     </div>
