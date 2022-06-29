@@ -293,12 +293,19 @@ func (bb *BangBang) ListHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (bb *BangBang) GridHandler(w http.ResponseWriter, r *http.Request) {
+	restrict := r.URL.Query().Get("restrict")
 	if bb.dev {
 		bb.initTemplates()
 	}
-	tpl, ok := bb.templates["grid.gohtml"]
+	var tplName string
+	if restrict == "bangbang" {
+		tplName = "gridbang.gohtml"
+	} else {
+		tplName = "grid.gohtml"
+	}
+	tpl, ok := bb.templates[tplName]
 	if !ok {
-		http.Error(w, "cannot find document.gohtml", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("cannot find %s", tplName), http.StatusInternalServerError)
 		return
 	}
 	works, err := bb.GetWorks()
@@ -306,6 +313,17 @@ func (bb *BangBang) GridHandler(w http.ResponseWriter, r *http.Request) {
 		bb.logger.Errorf("cannot get works: %v", err)
 		http.Error(w, fmt.Sprintf("cannot get works: %v", err), http.StatusInternalServerError)
 		return
+	}
+	var items []*search.SourceData
+	if restrict == "bangbang" {
+		items = []*search.SourceData{}
+		for _, item := range works {
+			if strings.HasPrefix(item.GetTitle(), "BANG BANG:") {
+				items = append(items, item)
+			}
+		}
+	} else {
+		items = works
 	}
 	data := struct {
 		Items    []*search.SourceData
@@ -316,7 +334,7 @@ func (bb *BangBang) GridHandler(w http.ResponseWriter, r *http.Request) {
 		PanoUrl  string
 		Station  bool
 	}{
-		Items:    works,
+		Items:    items,
 		DataDir:  bb.dataUrl.String(),
 		SalonUrl: bb.salonUrl.String(),
 		ListUrl:  bb.listUrl.String(),

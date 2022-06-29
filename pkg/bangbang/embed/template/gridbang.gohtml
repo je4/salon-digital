@@ -62,22 +62,22 @@
     </style>
 </head>
 <body class="bg-dark min-vh-100">
-    <div class="modal fade" id="documentModal" tabindex="-1" aria-labelledby="documentLabel" aria-hidden="true">
-        <div class="modal-dialog modal-fullscreen">
-            <div class="modal-content bg-dark">
-                <div class="modal-header bg-dark text-light" data-bs-dismiss="modal">
-                    <h5 class="modal-title bg-dark" id="documentLabel">New message</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <iframe style="width: 100%;height: 97%;" src=""></iframe>
-                </div>
-                <div class="modal-footer bg-dark" data-bs-dismiss="modal">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
+<div class="modal fade" id="documentModal" tabindex="-1" aria-labelledby="documentLabel" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content bg-dark">
+            <div class="modal-header bg-dark text-light" data-bs-dismiss="modal">
+                <h5 class="modal-title bg-dark" id="documentLabel">New message</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <iframe style="width: 100%;height: 97%;" src=""></iframe>
+            </div>
+            <div class="modal-footer bg-dark" data-bs-dismiss="modal">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
+</div>
 
 <main style="height: calc(100vh - 60px);">
     <div class="container-fluid content-height">
@@ -94,7 +94,7 @@
                     <hr>
                     <ul class="nav nav-pills nav-flush flex-sm-column flex-row flex-nowrap mb-auto mx-auto">
                         <li class="nav-item">
-                            <a href="{{$data.GridUrl}}" class="nav-link text-white bg-secondary active" aria-current="page">
+                            <a href="{{$data.GridUrl}}" class="nav-link text-white" aria-current="page">
                                 <i class="bi bi-grid-3x3-gap-fill"></i>
                                 <span  class="d-none d-lg-inline">Grid</span>
                             </a>
@@ -118,39 +118,39 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{$data.GridUrl}}?restrict=bangbang" class="nav-link text-white" aria-current="page">
+                            <a href="{{$data.GridUrl}}?restrict=bangbang" class="nav-link text-white bg-secondary active" aria-current="page">
                                 <i class="bi bi-camera-reels"></i>
                                 <span  class="d-none d-lg-inline">Produktionen</span>
                             </a>
                         </li>
                         {{if not .Station}}
-                        <li class="nav-item d-none d-lg-inline">
-                            <hr />
-                        </li>
-                        <li class="nav-item d-none d-lg-inline">
-                            <a href="https://mediathek.hgk.fhnw.ch/apply/bangbang/" class="nav-link text-white" aria-current="page">
-                                <i class="bi bi-file-earmark-plus"></i>
-                                Neu Einreichen
-                            </a>
-                        </li>
-                        <li class="nav-item d-none d-lg-inline">
-                            <a href="https://mediathek.hgk.fhnw.ch/corrbangbang/" class="nav-link text-white" aria-current="page">
-                                <i class="bi bi-file-earmark-ruled"></i>
-                                Korrigieren
-                            </a>
-                        </li>
-                        <li class="nav-item d-none d-lg-inline">
-                            <a href="https://mediathek.hgk.fhnw.ch/apply/bangbang/" class="nav-link text-white" aria-current="page">
-                                <i class="bi bi-file-earmark-plus"></i>
-                                New Entry
-                            </a>
-                        </li>
-                        <li class="nav-item d-none d-lg-inline">
-                            <a href="https://mediathek.hgk.fhnw.ch/corrbangbang/" class="nav-link text-white" aria-current="page">
-                                <i class="bi bi-file-earmark-ruled"></i>
-                                Correct
-                            </a>
-                        </li>
+                            <li class="nav-item d-none d-lg-inline">
+                                <hr />
+                            </li>
+                            <li class="nav-item d-none d-lg-inline">
+                                <a href="https://mediathek.hgk.fhnw.ch/apply/bangbang/" class="nav-link text-white" aria-current="page">
+                                    <i class="bi bi-file-earmark-plus"></i>
+                                    Neu Einreichen
+                                </a>
+                            </li>
+                            <li class="nav-item d-none d-lg-inline">
+                                <a href="https://mediathek.hgk.fhnw.ch/corrbangbang/" class="nav-link text-white" aria-current="page">
+                                    <i class="bi bi-file-earmark-ruled"></i>
+                                    Korrigieren
+                                </a>
+                            </li>
+                            <li class="nav-item d-none d-lg-inline">
+                                <a href="https://mediathek.hgk.fhnw.ch/apply/bangbang/" class="nav-link text-white" aria-current="page">
+                                    <i class="bi bi-file-earmark-plus"></i>
+                                    New Entry
+                                </a>
+                            </li>
+                            <li class="nav-item d-none d-lg-inline">
+                                <a href="https://mediathek.hgk.fhnw.ch/corrbangbang/" class="nav-link text-white" aria-current="page">
+                                    <i class="bi bi-file-earmark-ruled"></i>
+                                    Correct
+                                </a>
+                            </li>
                         {{end}}
                     </ul>
                     <div class="alert d-none d-lg-inline" role="alert" style="width:200px; color: #54fd53; border-color: #54fd53; margin-top: 30px;">
@@ -162,45 +162,45 @@
             </div>
             <div class="col-sm p-3 text-white rounded overflow-auto content-height" style="background-color: #979797; margin: 0; padding-top: 10px;">
                 <!-- start content -->
-            <div class="row g-3 overflow-auto" style="height: calc(100vh - 60px);">
-                {{range $item := .Items}}
-                    <div class="col" style="max-width: 300px;">
-                        <div class="card border-dark bg-dark text-white h-100"
-                             data-bs-toggle="modal"
-                             data-bs-target="#documentModal"
-                             data-bs-documenturl="../document/{{$item.Signature}}"
-                             data-bs-documenttitle="{{if (eq $item.Source "zotero2-1624911")}}Performance Chronik Basel - {{end}}#{{$item.SignatureOriginal}} {{$item.Title}}, {{$item.Date}}"
-                        >
-                            {{if $item.Poster}}
-                                <img style="width: 282px; height:240px; object-fit: cover;" src="{{list $data.DataDir "thumb" (mediaUrl (list $item.Poster.Uri "resize/autorotate/formatjpeg/size240x240" | join "/") "jpg") | joinSingle "/"}}" loading="lazy" />
-                            {{else}}
-                                <img src="{{list $data.DataDir "media/bangbang_300x300.png" | joinSingle "/"}}" style="width: 240px; height:240px;" loading="lazy" />
-                            {{end}}
+                <div class="row g-3 overflow-auto" style="height: calc(100vh - 60px);">
+                    {{range $item := .Items}}
+                        <div class="col" style="max-width: 300px;">
+                            <div class="card border-dark bg-dark text-white h-100"
+                                 data-bs-toggle="modal"
+                                 data-bs-target="#documentModal"
+                                 data-bs-documenturl="../document/{{$item.Signature}}"
+                                 data-bs-documenttitle="{{if (eq $item.Source "zotero2-1624911")}}Performance Chronik Basel - {{end}}#{{$item.SignatureOriginal}} {{$item.Title}}, {{$item.Date}}"
+                            >
+                                {{if $item.Poster}}
+                                    <img style="width: 282px; height:240px; object-fit: cover;" src="{{list $data.DataDir "thumb" (mediaUrl (list $item.Poster.Uri "resize/autorotate/formatjpeg/size240x240" | join "/") "jpg") | joinSingle "/"}}" loading="lazy" />
+                                {{else}}
+                                    <img src="{{list $data.DataDir "media/bangbang_300x300.png" | joinSingle "/"}}" style="width: 240px; height:240px;" loading="lazy" />
+                                {{end}}
 
-                            <div class="card-body py-1">
-                                <p class="card-text">{{if (eq $item.Source "zotero2-1624911")}}Performance Chronik Basel<br />{{end}}#{{$item.SignatureOriginal}} <span style="font-weight: bold;">{{$item.Title}}</span>{{if (ne $item.Date "")}}, {{$item.Date}}{{end}}<br />
-                                    {{$count := 0 }}
-                                    {{- range $p := $item.Persons}}{{if (hasPrefix "artist" $p.Role)}}{{if gt $count 0}}; {{end}}{{$p.Name}}{{$count = add $count 1}}{{end}}
-                                    {{- end}}
-                                    <br />
-                                    {{trimSuffix " (Reihenfolge am Ende vom Dateinamen benennen!) / Photo series (name sequence at the end of the file name!)" (index $item.Meta "medium")}}
-                                    {{if gt (len $item.Media) 0}}
-                                        {{range $key, $medias := $item.Media}}
-                                            // {{with (eq $key "image")}}Bilder:{{end}}
-                                            {{with (eq $key "video")}}Videos:{{end}}
-                                            {{with (eq $key "audio")}}Audio:{{end}}
-                                            {{with (eq $key "pdf")}}PDF:{{end}}
-                                            {{with (eq $key "default")}}Unbekannt:{{end}} {{len $medias}}
+                                <div class="card-body py-1">
+                                    <p class="card-text">{{if (eq $item.Source "zotero2-1624911")}}Performance Chronik Basel<br />{{end}}#{{$item.SignatureOriginal}} <span style="font-weight: bold;">{{$item.Title}}</span>{{if (ne $item.Date "")}}, {{$item.Date}}{{end}}<br />
+                                        {{$count := 0 }}
+                                        {{- range $p := $item.Persons}}{{if (hasPrefix "artist" $p.Role)}}{{if gt $count 0}}; {{end}}{{$p.Name}}{{$count = add $count 1}}{{end}}
+                                        {{- end}}
+                                        <br />
+                                        {{trimSuffix " (Reihenfolge am Ende vom Dateinamen benennen!) / Photo series (name sequence at the end of the file name!)" (index $item.Meta "medium")}}
+                                        {{if gt (len $item.Media) 0}}
+                                            {{range $key, $medias := $item.Media}}
+                                                // {{with (eq $key "image")}}Bilder:{{end}}
+                                                {{with (eq $key "video")}}Videos:{{end}}
+                                                {{with (eq $key "audio")}}Audio:{{end}}
+                                                {{with (eq $key "pdf")}}PDF:{{end}}
+                                                {{with (eq $key "default")}}Unbekannt:{{end}} {{len $medias}}
+                                            {{end}}
+                                        {{else}}
+                                            // keine Uploads
                                         {{end}}
-                                    {{else}}
-                                        // keine Uploads
-                                    {{end}}
-                                </p>
+                                    </p>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                {{end}}
-            </div>
+                    {{end}}
+                </div>
                 <!-- end content -->
             </div>
         </div>

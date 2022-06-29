@@ -247,7 +247,7 @@
                         {{if ne (index .Item.Meta "festival") ""}}<h4>{{index .Item.Meta "festival"}}</h4>
                         {{$metaIgnore = append $metaIgnore "festival"}}{{end}}
                         <p class="card-text mb-auto">
-                            {{if ne (index .Item.Meta "eventplace") ""}}Ort: {{index .Item.Meta "eventplace"}}<br />
+                            {{if ne .Item.GetPlace ""}}Ort: {{.Item.GetPlace}}<br />
                             {{$metaIgnore = append $metaIgnore "eventplace"}}{{end}}
                             {{if ne (index .Item.Meta "eventcurator") ""}}KuratorIn: {{index .Item.Meta "eventcurator"}}<br />
                             {{$metaIgnore = append $metaIgnore "eventcurator"}}{{end}}

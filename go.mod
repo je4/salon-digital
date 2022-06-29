@@ -3,7 +3,7 @@ module github.com/je4/salon-digital/v2
 go 1.18
 
 replace github.com/je4/salon-digital/v2 => ./
-
+replace github.com/je4/zsearch/v2 => ../zsearch/
 //replace github.com/je4/PictureFS/v2 => ../PictureFS/
 
 require (
@@ -20,11 +20,9 @@ require (
 	github.com/je4/utils/v2 v2.0.6
 	github.com/je4/zsearch/v2 v2.0.0-20220510114708-d9dcc9770f6c
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
-	google.golang.org/grpc v1.46.2
 )
 
 require (
-	cloud.google.com/go v0.100.2 // indirect
 	cloud.google.com/go/compute v1.6.1 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver v1.5.0 // indirect
@@ -122,6 +120,7 @@ require (
 	google.golang.org/api v0.80.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20220518221133-4f43b3371335 // indirect
+	google.golang.org/grpc v1.46.2 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/ini.v1 v1.66.4 // indirect
 	gopkg.in/resty.v1 v1.12.0 // indirect
