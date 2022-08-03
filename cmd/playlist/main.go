@@ -12,6 +12,7 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 )
@@ -23,6 +24,23 @@ type entry struct {
 	Signature string
 	Year      string
 	Len       int64
+}
+
+func timeMustParse(layout, value string) time.Time {
+	result, err := time.Parse(layout, value)
+	if err != nil {
+		panic(err)
+	}
+	return result
+}
+
+func inDateList(t time.Time, tl []time.Time) bool {
+	for _, te := range tl {
+		if t == te {
+			return true
+		}
+	}
+	return false
 }
 
 func main() {
@@ -114,15 +132,27 @@ func main() {
 					if m.Type != "video" {
 						continue
 					}
+					id := src.GetSignatureOriginal()
+					for {
+						if len(id) < 4 {
+							id = "0" + id
+						} else {
+							break
+						}
+					}
 					fp := filepath.ToSlash(filepath.Join( /*config.DataDir, */ "werke", fmt.Sprintf("%s", src.GetSignatureOriginal()), "derivate", tplfunctions.MediaUrl(m.Uri+"$$web/master", ".mp4")))
 					_, err := os.Stat(filepath.Join(config.DataDir, fp))
 					if err != nil {
-						logger.Errorf("cannot stat file %s", fp)
+						logger.Errorf("#%s - cannot stat file %s", id, fp)
+						continue
+					}
+					if m.Duration > 3600*4 {
+						logger.Infof("#%s - too long", id)
 						continue
 					}
 					entry := &entry{
 						VideoFile: fp,
-						Title:     fmt.Sprintf("#%s - %s", src.GetSignatureOriginal(), src.GetTitle()),
+						Title:     fmt.Sprintf("#%s - %s", id, src.GetTitle()),
 						Author:    "",
 						Signature: src.GetSignature(),
 						Year:      src.GetDate(),
@@ -150,7 +180,15 @@ func main() {
 
 	var seconds int64 = 0
 
-	lastDay, err := time.Parse("2006-01-02", "2022-08-21")
+	noKino := []time.Time{timeMustParse("2006-01-02", "2022-08-12")}
+	till21h := []time.Time{
+		timeMustParse("2006-01-02", "2022-08-05"),
+		timeMustParse("2006-01-02", "2022-08-12"),
+		timeMustParse("2006-01-02", "2022-08-19")}
+	till22h := []time.Time{
+		timeMustParse("2006-01-02", "2022-08-13"),
+		timeMustParse("2006-01-02", "2022-08-20")}
+	lastDay, err := time.Parse("2006-01-02" /* "2022-08-21" */, "2022-08-19")
 	if err != nil {
 		logger.Panic("invalid date")
 	}
@@ -158,19 +196,42 @@ func main() {
 	var currentTime, dayEnd time.Duration
 	nextDay := func() {
 		currentDay = currentDay.Add(-time.Hour * 24)
-		if currentDay.Weekday() == 1 {
-			currentDay = currentDay.Add(-time.Hour * 24)
+		for {
+			if currentDay.Weekday() == 1 {
+				currentDay = currentDay.Add(-time.Hour * 24)
+				continue
+			}
+			if inDateList(currentDay, noKino) {
+				currentDay = currentDay.Add(-time.Hour * 24)
+				continue
+			}
+			break
 		}
 
 		currentTime = time.Hour * 11
+		dayEnd = time.Hour * 18
 		if currentDay.Weekday() == 4 {
-			dayEnd = time.Hour*21 - time.Minute*10
-		} else {
-			dayEnd = time.Hour*18 - time.Minute*10
+			dayEnd = time.Hour * 21
 		}
+		if inDateList(currentDay, till21h) {
+			dayEnd = time.Hour * 21
+		}
+		if inDateList(currentDay, till22h) {
+			dayEnd = time.Hour * 22
+		}
+		dayEnd -= time.Minute * 15
 	}
 
 	nextDay()
+
+	prghtml := filepath.Join(config.BaseDir, fmt.Sprintf("program.html"))
+	prg2, err := os.Create(prghtml)
+	if err != nil {
+		logger.Panicf("cannot create playlist %s", prghtml)
+	}
+	prg2.WriteString("<html><head></head><body>\n")
+
+	var dates = map[string]string{}
 	pls := []*entry{}
 	for key, e := range list {
 		seconds += e.Len
@@ -189,23 +250,47 @@ func main() {
 			if err != nil {
 				logger.Panicf("cannot create playlist %s", prgname)
 			}
+			prg2.WriteString(fmt.Sprintf("<span id=\"%s\"><h3>%s</h3></span>\n", currentDay.Format("20060102"), currentDay.Format("02.01.2006")))
+			prg2.WriteString("<table>\n")
+			dates[currentDay.Format("20060102")] = currentDay.Format("02.01.2006")
+
 			vlc.WriteString("[playlist]\n")
 			vlc.WriteString(fmt.Sprintf("NumberOfEntries=%v\n", len(pls)))
+
 			prg.WriteString(fmt.Sprintf("Programm vom %s\n\n", currentDay.Format("02.01.2006")))
 			for fno, e := range pls {
 				vlc.WriteString(fmt.Sprintf("File%v=%s\n", fno+1, e.VideoFile))
 				vlc.WriteString(fmt.Sprintf("Title%v=%s\n", fno+1, e.Title))
 
 				startTime := currentDay.Add(currentTime)
+
 				prg.WriteString(fmt.Sprintf("%s - %s\n", startTime.Format("15:04:05"), e.Title))
+
+				prg2.WriteString("  <tr>\n")
+				prg2.WriteString(fmt.Sprintf("      <td>%s</td>\n", startTime.Format("15:04:05")))
+				prg2.WriteString(fmt.Sprintf("      <td>%s</td>\n", e.Title))
+				prg2.WriteString("  </tr>\n")
+
 				currentTime += time.Duration(e.Len) * time.Second
 			}
 			vlc.Close()
 			prg.Close()
+			prg2.WriteString("</table>\n")
 			nextDay()
 			pls = []*entry{}
 		}
 	}
+	ids := []string{}
+	for id, _ := range dates {
+		ids = append(ids, id)
+	}
+	sort.Strings(ids)
+	for _, id := range ids {
+		d := dates[id]
+		prg2.WriteString(fmt.Sprintf("<a href=\"#%s\">%s</a><br />\n", id, d))
+	}
+	prg2.WriteString("</body></html>\n")
+	prg2.Close()
 
 	logger.Infof("%v items, %v videos, %v hours", items, len(list), seconds/3600)
 

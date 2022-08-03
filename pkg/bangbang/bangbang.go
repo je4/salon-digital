@@ -503,3 +503,60 @@ func (bb *BangBang) DocumentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func (bb *BangBang) DetailHandler(w http.ResponseWriter, r *http.Request) {
+	if bb.dev {
+		bb.initTemplates()
+	}
+	vars := mux.Vars(r)
+	signature, ok := vars["signature"]
+	if !ok {
+		http.Error(w, "no signature in url", http.StatusNotFound)
+		return
+	}
+	src, err := bb.GetWork(signature)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("cannot get work #%s", signature), http.StatusNotFound)
+		return
+	}
+	contentOnline := false
+	acl_content, ok := src.ACL["content"]
+	if ok {
+		contentOnline = len(acl_content) > 1
+		for _, acl := range acl_content {
+			if acl == "global/guest" {
+				contentOnline = true
+			}
+		}
+	}
+
+	tpl, ok := bb.templates["detail.gohtml"]
+	if !ok {
+		http.Error(w, "cannot find document.gohtml", http.StatusInternalServerError)
+		return
+	}
+	data := struct {
+		Item          *search.SourceData
+		DataDir       string
+		Station       bool
+		ContentOnline bool
+		SalonUrl      string
+		ListUrl       string
+		GridUrl       string
+		PanoUrl       string
+	}{
+		Item:          src,
+		DataDir:       bb.dataUrl.String(),
+		Station:       bb.station,
+		ContentOnline: contentOnline,
+		SalonUrl:      bb.salonUrl.String(),
+		ListUrl:       bb.listUrl.String(),
+		GridUrl:       bb.gridUrl.String(),
+		PanoUrl:       bb.panoUrl.String(),
+	}
+	if err := tpl.Execute(w, data); err != nil {
+		bb.logger.Errorf("cannot execute template: %v", err)
+		http.Error(w, fmt.Sprintf("cannot execute template: %v", err), http.StatusInternalServerError)
+		return
+	}
+}

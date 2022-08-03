@@ -1,0 +1,433 @@
+{{$data := . }}<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="Jürgen Enge (juergen@info-age.net)">
+    <meta name="robots" content="noindex" />
+    <title>Einreichungen Bang Bang</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="{{$data.DataDir}}bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{$data.DataDir}}bootstrap/css/bootstrap-icons.css" rel="stylesheet">
+    <link href="{{list $data.DataDir "video-js/css/video-js.css" | joinSingle "/"}}" rel="stylesheet" />
+
+    <style>
+        .bd-placeholder-img {
+            font-size: 1.125rem;
+            text-anchor: middle;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+        }
+
+        @media (min-width: 768px) {
+            .bd-placeholder-img-lg {
+                font-size: 3.5rem;
+            }
+        }
+        @media (max-width: 576px) {
+            .content-height {
+                height: calc(100vh - 120px);
+            }
+            .footer-bs{
+                position: absolute;
+                width: 100%;
+                height: 84px;
+                bottom: 0px;
+                left: 0;
+            }
+        }
+        @media (min-width: 576px) {
+            .content-height {
+                height: calc(100vh - 60px);
+            }
+            .footer-bs{
+                position: absolute;
+                width: 100%;
+                height: 60px;
+                bottom: 0px;
+                left: 0;
+            }
+        }
+
+        p.help {
+            margin-bottom: 0px;
+            text-indent:-0.5em;
+            margin-left:0.5em
+        }
+
+
+    </style>
+</head>
+<body class="bg-dark min-vh-100">
+
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imageLabel">New message</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <img class="d-block w-100" src="" data-bs-dismiss="modal" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="pdfModal" tabindex="-1" aria-labelledby="pdfLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-fullscreen-xl-down">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="pdfLabel">New message</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <object
+                        class="d-block w-100"
+                        data=''
+                        type="application/pdf"
+                        height="678"
+                        data-bs-dismiss="modal"
+                ></object>
+                <!--
+                <iframe
+                        src=''
+                        class="d-block w-100"
+                        height="678"
+                ></iframe>
+                -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<main style="height: calc(100vh - 60px);">
+    {{$metaIgnore := list "titel" "year" }}
+    {{$derivatePath := list $data.DataDir "werke" .Item.SignatureOriginal "derivate" | joinSingle "/"}}
+    {{$masterPath := list $data.DataDir "werke" .Item.SignatureOriginal "master" | joinSingle "/"}}
+    {{$thumbPath := list $data.DataDir "thumb" | joinSingle "/"}}
+    <div class="container-fluid content-height">
+        <div class="row">
+            <div class="col-sm-auto text-white bg-dark sticky-top">
+                <div class="d-flex flex-sm-column flex-row flex-nowrap text-white bg-dark sticky-top">
+                    <!--
+                   <a href="/" class="d-block p-3 link-dark text-decoration-none" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
+                        <i class="bi-bootstrap fs-1"></i>
+                    </a>
+                    -->
+                    <span class="fs-4 d-none d-lg-inline" style="text-align: center;">{{if not .Station}}<a href="..">{{end}}<img src="{{list $data.DataDir "media/bangbang_300x300.png" | joinSingle "/"}}" style="width: 200px;"/>{{if not .Station}}</a>{{end}}</span>
+                    <span class="fs-4 d-lg-none" style="text-align: center;">{{if not .Station}}<a href="..">{{end}}<img src="{{list $data.DataDir "media/bangbang_300x300.png" | joinSingle "/"}}" style="width: 60px;"/>{{if not .Station}}</a>{{end}}</span>
+                    <hr>
+                    <ul class="nav nav-pills nav-flush flex-sm-column flex-row flex-nowrap mb-auto mx-auto">
+                        <li class="nav-item">
+                            <a href="{{$data.GridUrl}}" class="nav-link text-white" aria-current="page">
+                                <i class="bi bi-grid-3x3-gap-fill"></i>
+                                <span  class="d-none d-lg-inline">Grid</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{$data.ListUrl}}" class="nav-link text-white">
+                                <i class="bi bi-list-ul"></i>
+                                <span  class="d-none d-lg-inline">Liste</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{$data.PanoUrl}}" class="nav-link text-white">
+                                <i class="bi bi-grid-3x3"></i>
+                                <span  class="d-none d-lg-inline">Digitale See</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{$data.SalonUrl}}" class="nav-link text-white">
+                                <img style="width:17px; padding-bottom: 3px;" src="{{list $data.DataDir "img" "sdmllogo.png" | joinSingle "/"}}">
+                                <span  class="d-none d-lg-inline">Salon Digital</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{$data.GridUrl}}?restrict=bangbang" class="nav-link text-white" aria-current="page">
+                                <i class="bi bi-camera-reels"></i>
+                                <span  class="d-none d-lg-inline">Produktionen</span>
+                            </a>
+                        </li>
+                        {{if not .Station}}
+                            <li class="nav-item d-none d-lg-inline">
+                                <hr />
+                            </li>
+                            <li class="nav-item d-none d-lg-inline">
+                                <a href="https://mediathek.hgk.fhnw.ch/apply/bangbang/" class="nav-link text-white" aria-current="page">
+                                    <i class="bi bi-file-earmark-plus"></i>
+                                    Neu Einreichen
+                                </a>
+                            </li>
+                            <li class="nav-item d-none d-lg-inline">
+                                <a href="https://mediathek.hgk.fhnw.ch/corrbangbang/" class="nav-link text-white" aria-current="page">
+                                    <i class="bi bi-file-earmark-ruled"></i>
+                                    Korrigieren
+                                </a>
+                            </li>
+                            <li class="nav-item d-none d-lg-inline">
+                                <a href="https://mediathek.hgk.fhnw.ch/apply/bangbang/" class="nav-link text-white" aria-current="page">
+                                    <i class="bi bi-file-earmark-plus"></i>
+                                    New Entry
+                                </a>
+                            </li>
+                            <li class="nav-item d-none d-lg-inline">
+                                <a href="https://mediathek.hgk.fhnw.ch/corrbangbang/" class="nav-link text-white" aria-current="page">
+                                    <i class="bi bi-file-earmark-ruled"></i>
+                                    Correct
+                                </a>
+                            </li>
+                        {{end}}
+                    </ul>
+                </div>
+            </div>
+            <div class="col-sm p-3 text-white rounded content-height" style="background-color: #979797; margin: 0; padding-top: 10px;">
+                <!-- start content -->
+                <div class="row g-3 overflow-auto" style="height: calc(100vh - 60px);">
+                    <div class="col-8">
+                        <div class="border rounded m-1 p-1">
+                            {{/* Keine Uploads */}}
+                            {{if eq (len .Item.Media) 0}}
+                                <h2 class="display-6 text-center mb-4">Es wurden keine Medien hochgeladen<br />
+                                    No media availablea<br />
+                                    Aucun média disponible</h2>
+                            {{end}}
+                            {{if (and (not .Station) (not .ContentOnline))}}<h2 class="display-6 text-center mb-4">Unsufficient Rights</h2>{{else}}
+                                <div class="d-flex flex-wrap justify-content-center">
+                                    {{range $type,$medias := .Item.Media }}
+                                        {{if eq $type "image"}}
+                                            {{range $media := $medias}}
+                                                <img
+                                                        style="object-fit: cover; width: 200px; height:200px; float:left;"
+                                                        class="rounded m-1"
+                                                        src="{{list $derivatePath (mediaUrl (list $media.Uri "/resize/autorotate/formatjpeg/size240x240" | join "") "jpg") | joinSingle "/"}}"
+                                                        loading="lazy"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#imageModal"
+                                                        data-bs-imageurl="{{list $derivatePath (mediaUrl (list $media.Uri "/resize/autorotate/formatjpeg/size800x600" | join "") "jpg") | joinSingle "/"}}"
+                                                        data-bs-imagetitle="#{{substr 21 31 $media.Uri}}"
+                                                />
+                                            {{end}}
+                                        {{end}}
+                                        {{if eq $type "pdf"}}
+                                            {{range $media := $medias}}
+                                                <div style="position: relative">
+                                                    <img
+                                                            style="width: 200px; height:200px; object-fit: cover;"
+                                                            src="{{list $derivatePath (mediaUrl (list $media.Uri "$$poster/resize/autorotate/formatjpeg/size240x240" | join "") "jpg") | joinSingle "/"}}"
+                                                            loading="lazy"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#pdfModal"
+                                                            data-bs-pdfurl="{{list $masterPath (mediaUrl (list $media.Uri "master" | joinSingle "/") "pdf") | joinSingle "/"}}#toolbar=0"
+                                                            data-bs-pdftitle="#{{substr 21 31 $media.Uri}}"
+                                                    />
+                                                    <div class="overlay">
+                                                        <img style="width: 40px; vertical-align: top;" src="{{list $data.DataDir "img/PDF_file_icon.svg" | joinSingle "/"}}">
+                                                    </div>
+                                                </div>
+                                            {{end}}
+                                        {{end}}
+                                    {{end}}
+                                </div>
+                                {{range $type,$medias := .Item.Media }}
+                                    {{if eq $type "video"}}
+                                        {{range $media := $medias}}
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div class="col p-4 d-flex flex-column position-static align-items-center">
+                                                        <video
+                                                                class="video-js vjs-default-skin vjs-big-play-centered"
+                                                                controls
+                                                                preload="auto"
+                                                                width="640"
+                                                                height="264"
+                                                                poster="{{list $derivatePath (mediaUrl (list $media.Uri "$$timeshot$$3/resize/autorotate/formatjpeg/size640x264" | join "") "jpg") | joinSingle "/"}}"
+                                                                data-setup="{}"
+                                                        >
+                                                            <source src="{{list $derivatePath (mediaUrl (list $media.Uri "$$web/master" | join "") "mp4") | joinSingle "/"}}" type="video/mp4" />
+                                                            <p class="vjs-no-js">
+                                                                To view this video please enable JavaScript, and consider upgrading to a
+                                                                web browser that
+                                                                <a href="https://videojs.com/html5-video-support/" target="_blank"
+                                                                >supports HTML5 video</a
+                                                                >
+                                                            </p>
+                                                        </video>
+                                                        <br />
+                                                        <div class="">
+                                                            {{range $shot := list "3" "8" "12" "17" "22"}}
+                                                                <img
+                                                                        style="height: 100px;"
+                                                                        src="{{list  $derivatePath (mediaUrl (list $media.Uri "$$timeshot$$" $shot "/resize/autorotate/formatjpeg/size320x132" | join "") "jpg") | joinSingle "/" }}"
+                                                                        class=""
+                                                                        alt="Videoshot {{$shot}}">
+                                                            {{end}}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {{end}}
+                                    {{end}}
+                                {{end}}
+
+                                {{range $type,$medias := .Item.Media }}
+                                    {{if eq $type "audio"}}
+                                        {{range $media := $medias}}
+                                            <div class="col p-4 d-flex flex-column position-static align-items-center">
+                                                <video
+                                                        class="video-js vjs-default-skin vjs-big-play-centered"
+                                                        controls
+                                                        preload="auto"
+                                                        width="640"
+                                                        height="264"
+                                                        poster="{{list $derivatePath (mediaUrl (list $media.Uri "$$poster/resize/autorotate/formatjpeg/size640x264/stretch" | join "") "jpg") | joinSingle "/"}}"
+                                                        data-setup="{}"
+                                                >
+                                                    <source src="{{list $derivatePath (mediaUrl (list $media.Uri "$$web$$1/master" | join "") "m4a") | joinSingle "/"}}" type="audio/mp4" />
+                                                    <p class="vjs-no-js">
+                                                        To view this video please enable JavaScript, and consider upgrading to a
+                                                        web browser that
+                                                        <a href="https://videojs.com/html5-video-support/" target="_blank"
+                                                        >supports HTML5 video</a
+                                                        >
+                                                    </p>
+                                                </video>
+                                            </div>
+                                        {{end}}
+                                    {{end}}
+                                {{end}}
+                            {{end}}
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="border rounded m-1" style="padding-right: 10px;">
+                            <h1 class="fw-light"> {{if (eq .Item.Source "zotero2-1624911")}}Performance Chronik Basel<br />{{end}}</h1>
+                            Werknummer/Work ID: {{.Item.SignatureOriginal}}<br />
+                            <h1 class="fw-light">
+                                <span style="font-weight: bold;">{{.Item.Title}}</span>{{if (ne .Item.Date "")}}<br />
+                            ({{.Item.Date}}){{end}}</h1>
+                            <h2 style="margin-top: 20px;margin-bottom: 20px;">
+                                {{range $key, $p := .Item.Persons}}
+                                    {{- if hasPrefix "artist" $p.Role}}
+                                        {{- if gt $key 0}}; {{end}}{{$p.Name}}{{end}}{{end}}
+                            </h2>
+                            <h3>
+                                {{range $p := .Item.Persons}}
+                                    {{- if not (hasPrefix "artist" $p.Role)}}
+                                        {{$p.Name}} ({{camelcase (trimPrefix "performer:" $p.Role)}})<br />
+                                    {{- end}}
+                                {{end}}
+                            </h3>
+                            <div style="text-align: justify;margin-bottom: 10px; font-size: larger;">
+                                {{.Item.Abstract}}
+                            </div>
+                            {{range $note := .Item.Notes}}
+                                <div style="font-weight: bold;">{{$note.Title}}</div>
+                                <div style="text-align: justify;">{{$note.Note}}</div>
+                            {{end}}
+                            {{if ne (index .Item.Meta "anderesformat") ""}}<div style="font-weight: bold;">Alternative</div>
+                            <div style="text-align: justify;">{{index .Item.Meta "anderesformat"}}</div>
+                            {{$metaIgnore = append $metaIgnore "anderesformat"}}{{end}}
+
+                            {{/* Event */}}
+                            <div style="margin-top: 20px;">
+                                {{if ne (index .Item.Meta "festival") ""}}<h4>{{index .Item.Meta "festival"}}</h4>
+                                {{$metaIgnore = append $metaIgnore "festival"}}{{end}}
+                                <p class="card-text mb-auto">
+                                    {{if ne .Item.GetPlace ""}}Ort: {{.Item.GetPlace}}<br />
+                                    {{$metaIgnore = append $metaIgnore "eventplace"}}{{end}}
+                                    {{if ne (index .Item.Meta "eventcurator") ""}}KuratorIn: {{index .Item.Meta "eventcurator"}}<br />
+                                    {{$metaIgnore = append $metaIgnore "eventcurator"}}{{end}}
+                                    {{if ne (index .Item.Meta "doctype") ""}}Dokumentationstyp: {{index .Item.Meta "doctype"}}<br />
+                                    {{$metaIgnore = append $metaIgnore "doctype"}}{{end}}
+                                </p>
+                            </div>
+                            {{/* Medium */}}
+                            {{if (ne .Item.Source "zotero2-1624911")}}<div style="font-weight: bold; margin-top: 10px;">Medium</div>
+                            <p class="card-text mb-auto">
+                                {{index .Item.Meta "medium"}}<br />
+                                {{$metaIgnore = append $metaIgnore "medium"}}
+                                {{if ne (index .Item.Meta "dauer") ""}}Dauer: {{index .Item.Meta "dauer"}}<br />
+                                {{$metaIgnore = append $metaIgnore "dauer"}}{{end}}
+                            </p>
+                            {{end}}
+
+                        </div>
+                    </div>
+
+                </div>
+                <!-- end content -->
+            </div>
+        </div>
+    </div>
+</main>
+
+
+<footer class="text-muted footer-bs py-3 bg-dark">
+    <div class="container">
+        <p class="mb-1">Provided by <b>{{if not .Station}}<a class="text-muted" href="https://mediathek.hgk.fhnw.ch">{{end}}Mediathek HGK FHNW{{if not .Station}}</a>{{end}}</b> and <b>info-age GmbH, Basel</b></p>
+    </div>
+</footer>
+
+<script src="{{$data.DataDir}}bootstrap/js/bootstrap.bundle.js"></script>
+<script src="{{$data.DataDir}}video-js/js/video.min.js"></script>
+
+<script>
+    var imageModal = document.getElementById('imageModal')
+    imageModal.addEventListener('show.bs.modal', function (event) {
+        // Button that triggered the modal
+        var button = event.relatedTarget
+        // Extract info from data-bs-* attributes
+        var imageUrl = button.getAttribute('data-bs-imageurl')
+        var imageTitle = button.getAttribute('data-bs-imagetitle')
+
+        // If necessary, you could initiate an AJAX request here
+        // and then do the updating in a callback.
+        //
+        // Update the modal's content.
+        var modalTitle = imageModal.querySelector('.modal-title')
+        var modalBodyImg = imageModal.querySelector('.modal-body img')
+
+        modalTitle.textContent = imageTitle
+        modalBodyImg.src = imageUrl
+    })
+    var pdfModal = document.getElementById('pdfModal')
+    pdfModal.addEventListener('show.bs.modal', function (event) {
+        // Button that triggered the modal
+        const button = event.relatedTarget;
+        // Extract info from data-bs-* attributes
+        const pdfUrl = button.getAttribute('data-bs-pdfurl');
+        const pdfTitle = button.getAttribute('data-bs-pdftitle');
+
+        // If necessary, you could initiate an AJAX request here
+        // and then do the updating in a callback.
+        //
+        // Update the modal's content.
+        const modalTitle = pdfModal.querySelector('.modal-title');
+        const modalBody =  pdfModal.querySelector('.modal-body');
+        const modalBodyPdfObject = modalBody.querySelector('object');
+        //const modalBodyPdfIFrame = pdfModal.querySelector('.modal-body iframe');
+
+        modalTitle.textContent = pdfTitle
+        modalBodyPdfObject.data = pdfUrl;
+        const clone = modalBodyPdfObject.cloneNode(true);
+        const parent = modalBodyPdfObject.parentNode;
+
+        parent.removeChild(modalBodyPdfObject );
+        parent.appendChild(clone );
+        //modalBodyPdfIFrame.src = pdfUrl;
+    })
+</script>
+
+</body>
+</html>
+
