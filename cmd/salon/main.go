@@ -222,6 +222,8 @@ func main() {
 	srv.AddSubServer("/document", bbd)
 	bbg := &bangbang.BBGrid{BangBang: bb}
 	srv.AddSubServer("/grid", bbg)
+	bbi := &bangbang.BBIndex{BangBang: bb}
+	srv.AddSubServer("/index", bbi)
 	bbde := &bangbang.BBDetail{BangBang: bb}
 	srv.AddSubServer("/detail", bbde)
 	bbl := &bangbang.BBList{BangBang: bb}

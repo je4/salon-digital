@@ -17,8 +17,14 @@ import (
 	"net/http"
 	"net/url"
 	"path/filepath"
+	"regexp"
+	"sort"
 	"strings"
 )
+
+type stats struct {
+	Items, Images, PDFs, Videos, VideoLength, Audios, AudioLength, Persons int64
+}
 
 type BangBang struct {
 	index      bleve.Index
@@ -35,6 +41,8 @@ type BangBang struct {
 	listUrl    *url.URL
 	gridUrl    *url.URL
 	salonZoom  float64
+	works      []*search.SourceData
+	stats      stats
 }
 
 func NewBangBang(index bleve.Index, urlExt *url.URL, dataUrl *url.URL, collagePos map[string][]image.Rectangle, templateFS fs.FS, salonZoom float64, logger *logging.Logger, station, dev bool) (*BangBang, error) {
@@ -97,32 +105,32 @@ func findAllFiles(fsys fs.FS, dir, suffix string) ([]string, error) {
 /*
 var mediaserverRegexp = regexp.MustCompile("^mediaserver:([^/]+)/([^/]+)/(.+)$")
 
-func mediaUrl(extension, mediaserverUrl string) (string, error) {
-	matches := mediaserverRegexp.FindStringSubmatch(mediaserverUrl)
-	if matches == nil {
-		return "", errors.New(fmt.Sprintf("invalid url: %s", mediaserverUrl))
-	}
-	collection := matches[1]
-	signature := matches[2]
-	function := matches[3]
+	func mediaUrl(extension, mediaserverUrl string) (string, error) {
+		matches := mediaserverRegexp.FindStringSubmatch(mediaserverUrl)
+		if matches == nil {
+			return "", errors.New(fmt.Sprintf("invalid url: %s", mediaserverUrl))
+		}
+		collection := matches[1]
+		signature := matches[2]
+		function := matches[3]
 
-	functions := strings.Split(strings.ToLower(function), "/")
-	cmd := functions[0]
-	functions = functions[1:]
-	sort.Strings(functions)
-	functions = append([]string{cmd}, functions...)
-	function = strings.Join(functions, "/")
-	filename := strings.ToLower(fmt.Sprintf("%s_%s_%s.%s",
-		collection,
-		strings.ReplaceAll(signature, "$", "-"),
-		strings.ReplaceAll(function, "/", "_"),
-		strings.TrimPrefix(extension, ".")))
-	if len(filename) > 203 {
-		filename = fmt.Sprintf("%s-_-%s", filename[:100], filename[len(filename)-100:])
+		functions := strings.Split(strings.ToLower(function), "/")
+		cmd := functions[0]
+		functions = functions[1:]
+		sort.Strings(functions)
+		functions = append([]string{cmd}, functions...)
+		function = strings.Join(functions, "/")
+		filename := strings.ToLower(fmt.Sprintf("%s_%s_%s.%s",
+			collection,
+			strings.ReplaceAll(signature, "$", "-"),
+			strings.ReplaceAll(function, "/", "_"),
+			strings.TrimPrefix(extension, ".")))
+		if len(filename) > 203 {
+			filename = fmt.Sprintf("%s-_-%s", filename[:100], filename[len(filename)-100:])
+		}
+		fullpath := filepath.Join(filename)
+		return fullpath, nil
 	}
-	fullpath := filepath.Join(filename)
-	return fullpath, nil
-}
 */
 func (bb *BangBang) initTemplates() error {
 	funcMap := sprig.FuncMap()
@@ -168,9 +176,12 @@ func (bb *BangBang) GetSignatureP(posX, posY int) string {
 	return ""
 }
 func (bb *BangBang) GetWorks() ([]*search.SourceData, error) {
+	if bb.works != nil {
+		return bb.works, nil
+	}
 	bQuery := bleve.NewMatchAllQuery()
 	bSearch := bleve.NewSearchRequest(bQuery)
-	var works = []*search.SourceData{}
+	bb.works = []*search.SourceData{}
 	bSearch.Size = 100
 	for {
 		searchResult, err := bb.index.Search(bSearch)
@@ -182,14 +193,68 @@ func (bb *BangBang) GetWorks() ([]*search.SourceData, error) {
 			if err != nil {
 				return nil, emperror.Wrapf(err, "cannot get document #%s from index", val.ID)
 			}
-			works = append(works, src)
+			bb.works = append(bb.works, src)
 		}
 		if len(searchResult.Hits) < 100 {
 			break
 		}
 		bSearch.From += 100
 	}
-	return works, nil
+
+	var pstring = []string{}
+	bb.stats.Items = int64(len(bb.works))
+	for _, item := range bb.works {
+		for t, ms := range item.GetMedia() {
+			switch t {
+			case "image":
+				bb.stats.Images += int64(len(ms))
+			case "pdf":
+				bb.stats.PDFs += int64(len(ms))
+			case "video":
+				bb.stats.Videos += int64(len(ms))
+				for _, m := range ms {
+					bb.stats.VideoLength += m.Duration
+				}
+			case "audio":
+				bb.stats.Audios += int64(len(ms))
+				for _, m := range ms {
+					bb.stats.AudioLength += m.Duration
+				}
+			}
+			badname := regexp.MustCompile("^[^,:]+(,[^,:]+)?$")
+			for _, p := range item.GetPersons() {
+				name := strings.TrimSpace(strings.ToLower(p.Name))
+				if name == "" {
+					continue
+				}
+				if !badname.MatchString(name) {
+					fmt.Printf("#%s: [%s] %s\n", item.GetSignatureOriginal(), p.Role, p.Name)
+					continue
+				}
+				found := false
+				for _, s := range pstring {
+					//					d := tdl.Distance(name, s)
+					//					fmt.Printf("%s <-> %s: %v;\n", name, s, d)
+					if s == name {
+						found = true
+						break
+					}
+				}
+				if !found {
+					pstring = append(pstring, name)
+					// fmt.Printf("%v: %s\n", len(pstring), name)
+				}
+			}
+			bb.stats.Persons = int64(len(pstring))
+		}
+	}
+	fmt.Printf("Items: %v\n", bb.stats.Items)
+	fmt.Printf("Images: %v\n", bb.stats.Images)
+	fmt.Printf("PDFs: %v\n", bb.stats.PDFs)
+	fmt.Printf("Videos: %v (%vsec)\n", bb.stats.Videos, bb.stats.VideoLength)
+	fmt.Printf("Audios: %v (%vsec)\n", bb.stats.Audios, bb.stats.AudioLength)
+
+	return bb.works, nil
 }
 func (bb *BangBang) GetWorksSalon() (map[string]*salon.Work, error) {
 	signatures := map[string]*salon.Work{}
@@ -406,6 +471,7 @@ func (bb *BangBang) HomeHandler(w http.ResponseWriter, r *http.Request) {
 		ListUrl  string
 		GridUrl  string
 		Station  bool
+		Stats    stats
 	}{
 		Lang:     lang,
 		SalonUrl: bb.salonUrl.String(),
@@ -414,6 +480,7 @@ func (bb *BangBang) HomeHandler(w http.ResponseWriter, r *http.Request) {
 		DataDir:  bb.dataUrl.String(),
 		PanoUrl:  bb.panoUrl.String(),
 		Station:  bb.station,
+		Stats:    bb.stats,
 	}
 	if err := tpl.Execute(w, data); err != nil {
 		bb.logger.Errorf("cannot execute template: %v", err)
@@ -559,4 +626,94 @@ func (bb *BangBang) DetailHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("cannot execute template: %v", err), http.StatusInternalServerError)
 		return
 	}
+}
+
+type personIndex struct {
+	Name  string
+	Works map[string][]string
+}
+
+func (bb *BangBang) IndexHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	if bb.dev {
+		bb.initTemplates()
+	}
+	var tplName = "index.gohtml"
+	tpl, ok := bb.templates[tplName]
+	if !ok {
+		http.Error(w, fmt.Sprintf("cannot find %s", tplName), http.StatusInternalServerError)
+		return
+	}
+	works, err := bb.GetWorks()
+	if err != nil {
+		bb.logger.Errorf("cannot get works: %v", err)
+		http.Error(w, fmt.Sprintf("cannot get works: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	pIndex := map[string]personIndex{}
+	pNames := []string{}
+	badname := regexp.MustCompile("^[^,:]+(,[^,:]+)?$")
+	for _, item := range works {
+		for _, p := range item.GetPersons() {
+			name := strings.Trim(strings.ToLower(p.Name), " [];,")
+			if name == "" {
+				continue
+			}
+			if !badname.MatchString(name) {
+				fmt.Printf("#%s: [%s] %s\n", item.GetSignatureOriginal(), p.Role, p.Name)
+				//continue
+			}
+			if _, ok := pIndex[name]; !ok {
+				pIndex[name] = personIndex{
+					Name:  p.Name,
+					Works: map[string][]string{},
+				}
+				pNames = append(pNames, name)
+			}
+			if _, ok := pIndex[name].Works[p.Role]; !ok {
+				pIndex[name].Works[p.Role] = []string{}
+			}
+			id := item.GetSignatureOriginal()
+			for {
+				if len(id) > 4 {
+					break
+				}
+				id = "0" + id
+			}
+			id = "#" + id
+			pIndex[name].Works[p.Role] = append(pIndex[name].Works[p.Role], id)
+		}
+	}
+	sort.Strings(pNames)
+	data := struct {
+		Items       []*search.SourceData
+		DataDir     string
+		SalonUrl    string
+		ListUrl     string
+		GridUrl     string
+		PanoUrl     string
+		Station     bool
+		Persons     map[string]personIndex
+		PersonNames []string
+		Type        string
+	}{
+		Items:       works,
+		DataDir:     bb.dataUrl.String(),
+		SalonUrl:    bb.salonUrl.String(),
+		ListUrl:     bb.listUrl.String(),
+		GridUrl:     bb.gridUrl.String(),
+		PanoUrl:     bb.panoUrl.String(),
+		Station:     bb.station,
+		Persons:     pIndex,
+		PersonNames: pNames,
+		Type:        vars["type"],
+	}
+
+	if err := tpl.Execute(w, data); err != nil {
+		bb.logger.Errorf("cannot execute template: %v", err)
+		http.Error(w, fmt.Sprintf("cannot execute template: %v", err), http.StatusInternalServerError)
+		return
+	}
+
 }

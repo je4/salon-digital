@@ -2,6 +2,8 @@ package tplfunctions
 
 import (
 	"fmt"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 	"html/template"
 	"reflect"
 	"regexp"
@@ -83,6 +85,20 @@ func iterate(count int) []int {
 	return Items
 }
 
+func formatLength(seconds int64) string {
+	hours := (seconds - (seconds % 3600)) / 3600
+	seconds = seconds % 3600
+	minutes := (seconds - (seconds % 60)) / 60
+	seconds = seconds % 60
+	return fmt.Sprintf("%02d:%02d:%02d", hours, minutes, seconds)
+}
+
+func formatNumber(num int64) string {
+	p := message.NewPrinter(language.German)
+	s := p.Sprintf("%d", num)
+	return strings.Replace(s, ".", "'", -1)
+}
+
 func fillStr(str string, filler string, l int) string {
 	if len(str) >= l {
 		return str
@@ -136,7 +152,9 @@ var funcMap = map[string]any{
 		}
 		return "https://" + u
 	},
-	"fillStr": fillStr,
+	"fillStr":      fillStr,
+	"formatLength": formatLength,
+	"formatNumber": formatNumber,
 }
 
 func GetFuncMap() template.FuncMap {

@@ -3,7 +3,9 @@ module github.com/je4/salon-digital/v2
 go 1.18
 
 replace github.com/je4/salon-digital/v2 => ./
+
 replace github.com/je4/zsearch/v2 => ../zsearch/
+
 //replace github.com/je4/PictureFS/v2 => ../PictureFS/
 
 require (
@@ -19,7 +21,9 @@ require (
 	github.com/je4/bremote/v2 v2.0.0-20220513085231-c8464a3699b7
 	github.com/je4/utils/v2 v2.0.6
 	github.com/je4/zsearch/v2 v2.0.0-20220510114708-d9dcc9770f6c
+	github.com/lmas/Damerau-Levenshtein v1.0.0
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
+	golang.org/x/text v0.3.7
 )
 
 require (
@@ -60,7 +64,6 @@ require (
 	github.com/go-git/gcfg v1.5.0 // indirect
 	github.com/go-git/go-billy/v5 v5.3.1 // indirect
 	github.com/go-git/go-git/v5 v5.4.2 // indirect
-	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
@@ -116,7 +119,6 @@ require (
 	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5 // indirect
 	golang.org/x/sync v0.0.0-20220513210516-0976fa681c29 // indirect
 	golang.org/x/sys v0.0.0-20220517195934-5e4e11fc645e // indirect
-	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/api v0.80.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20220518221133-4f43b3371335 // indirect
