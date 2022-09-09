@@ -23,6 +23,7 @@ require (
 	github.com/je4/zsearch/v2 v2.0.0-20220510114708-d9dcc9770f6c
 	github.com/lmas/Damerau-Levenshtein v1.0.0
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
+	golang.org/x/exp v0.0.0-20220907003533-145caa8ea1d0
 	golang.org/x/text v0.3.7
 )
 
@@ -118,7 +119,7 @@ require (
 	golang.org/x/net v0.0.0-20220517181318-183a9ca12b87 // indirect
 	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5 // indirect
 	golang.org/x/sync v0.0.0-20220513210516-0976fa681c29 // indirect
-	golang.org/x/sys v0.0.0-20220517195934-5e4e11fc645e // indirect
+	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f // indirect
 	google.golang.org/api v0.80.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20220518221133-4f43b3371335 // indirect

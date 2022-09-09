@@ -11,6 +11,7 @@ import (
 	"github.com/je4/salon-digital/v2/pkg/tplfunctions"
 	"github.com/je4/zsearch/v2/pkg/search"
 	"github.com/op/go-logging"
+	"golang.org/x/exp/slices"
 	"html/template"
 	"image"
 	"io/fs"
@@ -654,11 +655,18 @@ func (bb *BangBang) IndexHandler(w http.ResponseWriter, r *http.Request) {
 	pIndex := map[string]personIndex{}
 	pNames := []string{}
 	badname := regexp.MustCompile("^[^,:]+(,[^,:]+)?$")
+	roles := []string{"artist", "performer", "director"}
 	for _, item := range works {
 		for _, p := range item.GetPersons() {
 			name := strings.Trim(strings.ToLower(p.Name), " [];,")
 			if name == "" {
 				continue
+			}
+			if !slices.Contains(roles, p.Role) {
+				continue
+			}
+			if p.Role == "director" {
+				p.Role = "artist"
 			}
 			if !badname.MatchString(name) {
 				fmt.Printf("#%s: [%s] %s\n", item.GetSignatureOriginal(), p.Role, p.Name)

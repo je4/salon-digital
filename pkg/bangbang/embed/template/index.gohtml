@@ -103,7 +103,7 @@
             <div class="person">
                 <span style="font-weight: bold;">{{$p.Name}}</span>
                 {{range $t, $ids := $p.Works}}
-                    {{$ids | join "/"}} ({{$t}})
+                    {{$ids | join " "}} ({{$t}})
                 {{end}}
             </div>
     {{end}}
