@@ -1,0 +1,98 @@
+{
+   "OffsetX": 20,
+   "OffsetY": 20,
+   "Filename": "Page01.png",
+   "Image": {
+      "grey.gif": {
+         "X": 3,
+         "Y": 1067,
+         "Width": 54,
+         "Height": 54,
+         "Rotation": false
+      },
+      "index.gif": {
+         "X": 291,
+         "Y": 1067,
+         "Width": 10,
+         "Height": 100,
+         "Rotation": false
+      },
+      "lb-curve.gif": {
+         "X": 917,
+         "Y": 3,
+         "Width": 108,
+         "Height": 100,
+         "Rotation": false
+      },
+      "lt-curve.gif": {
+         "X": 765,
+         "Y": 581,
+         "Width": 108,
+         "Height": 100,
+         "Rotation": false
+      },
+      "r-2long.gif": {
+         "X": 1031,
+         "Y": 3,
+         "Width": 10,
+         "Height": 516,
+         "Rotation": true
+      },
+      "r-long.gif": {
+         "X": 879,
+         "Y": 581,
+         "Width": 10,
+         "Height": 362,
+         "Rotation": true
+      },
+      "r.gif": {
+         "X": 175,
+         "Y": 1067,
+         "Width": 110,
+         "Height": 10,
+         "Rotation": false
+      },
+      "rb-curve.gif": {
+         "X": 649,
+         "Y": 581,
+         "Width": 110,
+         "Height": 100,
+         "Rotation": false
+      },
+      "rt-curve.gif": {
+         "X": 801,
+         "Y": 3,
+         "Width": 110,
+         "Height": 100,
+         "Rotation": false
+      },
+      "salon.gif": {
+         "X": 3,
+         "Y": 581,
+         "Width": 640,
+         "Height": 480,
+         "Rotation": false
+      },
+      "sdmllogo.gif": {
+         "X": 63,
+         "Y": 1067,
+         "Width": 54,
+         "Height": 54,
+         "Rotation": false
+      },
+      "startup.gif": {
+         "X": 3,
+         "Y": 3,
+         "Width": 792,
+         "Height": 572,
+         "Rotation": false
+      },
+      "zkm3.gif": {
+         "X": 123,
+         "Y": 1067,
+         "Width": 46,
+         "Height": 30,
+         "Rotation": false
+      }
+   }
+}
