@@ -651,6 +651,14 @@ func (bb *BangBang) IndexHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("cannot get works: %v", err), http.StatusInternalServerError)
 		return
 	}
+	sort.Slice(works, func(i, j int) bool {
+		a := works[i]
+		b := works[j]
+		if len(a.Signature) < len(b.Signature) {
+			return true
+		}
+		return a.Signature < b.Signature
+	})
 
 	pIndex := map[string]personIndex{}
 	pNames := []string{}
@@ -659,6 +667,8 @@ func (bb *BangBang) IndexHandler(w http.ResponseWriter, r *http.Request) {
 	for _, item := range works {
 		for _, p := range item.GetPersons() {
 			name := strings.Trim(strings.ToLower(p.Name), " [];,")
+			parts2 := strings.Split(name, "(")
+			name = strings.TrimSpace(parts2[0])
 			if name == "" {
 				continue
 			}
@@ -672,9 +682,10 @@ func (bb *BangBang) IndexHandler(w http.ResponseWriter, r *http.Request) {
 				fmt.Printf("#%s: [%s] %s\n", item.GetSignatureOriginal(), p.Role, p.Name)
 				//continue
 			}
+			parts := strings.Split(p.Name, "(")
 			if _, ok := pIndex[name]; !ok {
 				pIndex[name] = personIndex{
-					Name:  p.Name,
+					Name:  strings.TrimSpace(parts[0]),
 					Works: map[string][]string{},
 				}
 				pNames = append(pNames, name)
