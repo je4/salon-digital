@@ -2,10 +2,8 @@ package salon
 
 import (
 	"github.com/Masterminds/sprig"
-	"github.com/goph/emperror"
 	"github.com/gorilla/mux"
 	"github.com/je4/salon-digital/v2/pkg/tplfunctions"
-	"github.com/op/go-logging"
 	"html/template"
 	"io/fs"
 	"net/http"
@@ -47,13 +45,13 @@ func (s *Salon) initTemplates() (err error) {
 	}
 	templateFiles, err := findAllFiles(s.templateFS, ".", ".gohtml")
 	if err != nil {
-		return emperror.Wrap(err, "cannot find templates")
+		return errors.Wrap(err, "cannot find templates")
 	}
 	for _, templateFile := range templateFiles {
 		name := filepath.Base(templateFile)
 		s.gridTemplate[name], err = template.New(name).Funcs(funcMap).ParseFS(s.templateFS, templateFile)
 		if err != nil {
-			return emperror.Wrapf(err, "cannot parse template: %s", templateFile)
+			return errors.Wrapf(err, "cannot parse template: %s", templateFile)
 		}
 	}
 	return nil

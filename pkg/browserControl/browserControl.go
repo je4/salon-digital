@@ -5,9 +5,7 @@ import (
 	"github.com/chromedp/cdproto/fetch"
 	"github.com/chromedp/cdproto/network"
 	"github.com/chromedp/chromedp"
-	"github.com/goph/emperror"
 	"github.com/je4/bremote/v2/browser"
-	"github.com/op/go-logging"
 	"io/ioutil"
 	"net/url"
 	"path/filepath"
@@ -71,11 +69,11 @@ func (bc *BrowserControl) Start() error {
 	var err error
 	bc.browser, err = browser.NewBrowser(bc.opts, bc.logger, bc.log)
 	if err != nil {
-		return emperror.Wrap(err, "cannot create browser instance")
+		return errors.Wrap(err, "cannot create browser instance")
 	}
 	// ensure that the browser process is started
 	if err := bc.browser.Run(); err != nil {
-		return emperror.Wrap(err, "cannot run browser")
+		return errors.Wrap(err, "cannot run browser")
 	}
 
 	path := filepath.Join(bc.browser.TempDir, "DevToolsActivePort")

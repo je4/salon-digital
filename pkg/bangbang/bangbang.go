@@ -4,13 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Masterminds/sprig"
-	"github.com/blevesearch/bleve/v2"
-	"github.com/goph/emperror"
 	"github.com/gorilla/mux"
 	"github.com/je4/salon-digital/v2/pkg/salon"
 	"github.com/je4/salon-digital/v2/pkg/tplfunctions"
 	"github.com/je4/zsearch/v2/pkg/search"
-	"github.com/op/go-logging"
 	"golang.org/x/exp/slices"
 	"html/template"
 	"image"
@@ -62,19 +59,19 @@ func NewBangBang(index bleve.Index, urlExt *url.URL, dataUrl *url.URL, collagePo
 	var err error
 	b.salonUrl, err = b.urlExt.Parse("salon/")
 	if err != nil {
-		return nil, emperror.Wrapf(err, "cannot parse url %s -> %s", b.urlExt.String(), "/salon")
+		return nil, errors.Wrapf(err, "cannot parse url %s -> %s", b.urlExt.String(), "/salon")
 	}
 	b.listUrl, err = b.urlExt.Parse("list/")
 	if err != nil {
-		return nil, emperror.Wrapf(err, "cannot parse url %s -> %s", b.urlExt.String(), "/list")
+		return nil, errors.Wrapf(err, "cannot parse url %s -> %s", b.urlExt.String(), "/list")
 	}
 	b.gridUrl, err = b.urlExt.Parse("grid/")
 	if err != nil {
-		return nil, emperror.Wrapf(err, "cannot parse url %s -> %s", b.urlExt.String(), "/grid")
+		return nil, errors.Wrapf(err, "cannot parse url %s -> %s", b.urlExt.String(), "/grid")
 	}
 	b.panoUrl, err = b.urlExt.Parse("digitale-see/")
 	if err != nil {
-		return nil, emperror.Wrapf(err, "cannot parse url %s -> %s", b.urlExt.String(), "/pano")
+		return nil, errors.Wrapf(err, "cannot parse url %s -> %s", b.urlExt.String(), "/pano")
 	}
 
 	return b, b.initTemplates()
@@ -83,7 +80,7 @@ func NewBangBang(index bleve.Index, urlExt *url.URL, dataUrl *url.URL, collagePo
 func findAllFiles(fsys fs.FS, dir, suffix string) ([]string, error) {
 	entries, err := fs.ReadDir(fsys, dir)
 	if err != nil {
-		return nil, emperror.Wrapf(err, "error reading directory %s", dir)
+		return nil, errors.Wrapf(err, "error reading directory %s", dir)
 	}
 	var result = []string{}
 	for _, entry := range entries {
@@ -140,13 +137,13 @@ func (bb *BangBang) initTemplates() error {
 	}
 	templateFiles, err := findAllFiles(bb.templateFS, ".", ".gohtml")
 	if err != nil {
-		return emperror.Wrap(err, "cannot find templates")
+		return errors.Wrap(err, "cannot find templates")
 	}
 	for _, templateFile := range templateFiles {
 		name := filepath.Base(templateFile)
 		bb.templates[name], err = template.New(name).Funcs(funcMap).ParseFS(bb.templateFS, templateFile)
 		if err != nil {
-			return emperror.Wrapf(err, "cannot parse template: %s", templateFile)
+			return errors.Wrapf(err, "cannot parse template: %s", templateFile)
 		}
 	}
 	return nil
@@ -156,11 +153,11 @@ func (bb *BangBang) initTemplates() error {
 func (bb *BangBang) GetWork(signature string) (*search.SourceData, error) {
 	raw, err := bb.index.GetInternal([]byte(signature))
 	if err != nil {
-		return nil, emperror.Wrapf(err, "cannot get document #%s from index", signature)
+		return nil, errors.Wrapf(err, "cannot get document #%s from index", signature)
 	}
 	var src = &search.SourceData{}
 	if err := json.Unmarshal(raw, src); err != nil {
-		return nil, emperror.Wrapf(err, "cannot unmarshal document #%s", signature)
+		return nil, errors.Wrapf(err, "cannot unmarshal document #%s", signature)
 	}
 	return src, nil
 }
@@ -187,12 +184,12 @@ func (bb *BangBang) GetWorks() ([]*search.SourceData, error) {
 	for {
 		searchResult, err := bb.index.Search(bSearch)
 		if err != nil {
-			return nil, emperror.Wrap(err, "cannot load works from index")
+			return nil, errors.Wrap(err, "cannot load works from index")
 		}
 		for _, val := range searchResult.Hits {
 			src, err := bb.GetWork(val.ID)
 			if err != nil {
-				return nil, emperror.Wrapf(err, "cannot get document #%s from index", val.ID)
+				return nil, errors.Wrapf(err, "cannot get document #%s from index", val.ID)
 			}
 			bb.works = append(bb.works, src)
 		}
@@ -261,12 +258,12 @@ func (bb *BangBang) GetWorksSalon() (map[string]*salon.Work, error) {
 	signatures := map[string]*salon.Work{}
 	works, err := bb.GetWorks()
 	if err != nil {
-		return nil, emperror.Wrap(err, "cannot load works from index")
+		return nil, errors.Wrap(err, "cannot load works from index")
 	}
 	for _, src := range works {
 		src, err := bb.GetWork(src.Signature)
 		if err != nil {
-			return nil, emperror.Wrapf(err, "cannot get document #%s from index", src.Signature)
+			return nil, errors.Wrapf(err, "cannot get document #%s from index", src.Signature)
 		}
 		poster := src.GetPoster()
 		var work = &salon.Work{
@@ -289,7 +286,7 @@ func (bb *BangBang) GetWorksSalon() (map[string]*salon.Work, error) {
 				tplfunctions.MediaUrl(poster.Uri+"/resize/size240x240/formatjpeg", "jpg"),
 			)
 			if err != nil {
-				return nil, emperror.Wrapf(err, "cannot create path for %s", poster.Uri)
+				return nil, errors.Wrapf(err, "cannot create path for %s", poster.Uri)
 			}
 
 			work.ImageUrl = imagePath
@@ -297,7 +294,7 @@ func (bb *BangBang) GetWorksSalon() (map[string]*salon.Work, error) {
 		}
 		iframeUrl, err := bb.urlExt.Parse(fmt.Sprintf("document/%s", src.Signature))
 		if err != nil {
-			return nil, emperror.Wrapf(err, "cannot parse url %s -> document/%v", bb.urlExt.String(), src.Signature)
+			return nil, errors.Wrapf(err, "cannot parse url %s -> document/%v", bb.urlExt.String(), src.Signature)
 		}
 		work.IFrameUrl = iframeUrl.String()
 		for _, p := range src.GetPersons() {

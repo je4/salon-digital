@@ -5,11 +5,9 @@ import (
 	"crypto/sha256"
 	"crypto/subtle"
 	"crypto/tls"
-	"github.com/goph/emperror"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	dcert "github.com/je4/utils/v2/pkg/cert"
-	"github.com/op/go-logging"
 	"io"
 	"io/fs"
 	"net"
@@ -42,12 +40,12 @@ type Server struct {
 func NewServer(service, addr string, urlExt *url.URL, name, password string, dataFS fs.FS, log *logging.Logger, accessLog io.Writer) (*Server, error) {
 	host, port, err := net.SplitHostPort(addr)
 	if err != nil {
-		return nil, emperror.Wrapf(err, "cannot split address %s", addr)
+		return nil, errors.Wrapf(err, "cannot split address %s", addr)
 	}
 	/*
 		extUrl, err := url.Parse(addrExt)
 		if err != nil {
-			return nil, emperror.Wrapf(err, "cannot parse external address %s", addrExt)
+			return nil, errors.Wrapf(err, "cannot parse external address %s", addrExt)
 		}
 	*/
 
@@ -69,7 +67,7 @@ func NewServer(service, addr string, urlExt *url.URL, name, password string, dat
 	return srv, nil
 }
 
-//func basicAuth(next http.HandlerFunc) http.HandlerFunc {
+// func basicAuth(next http.HandlerFunc) http.HandlerFunc {
 func (s *Server) basicAuth(h http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		// https://www.alexedwards.net/blog/basic-authentication-in-go
@@ -133,7 +131,7 @@ func (s *Server) ListenAndServe(cert, key string) (err error) {
 	router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 		pathRegexp, err := route.GetPathRegexp()
 		if err != nil {
-			return emperror.Wrapf(err, "cannot get path regexp of route %s", route.GetName())
+			return errors.Wrapf(err, "cannot get path regexp of route %s", route.GetName())
 		}
 		s.log.Infof("Route %s: %s", route.GetName(), pathRegexp)
 		return nil
@@ -155,7 +153,7 @@ func (s *Server) ListenAndServe(cert, key string) (err error) {
 		s.log.Info("generating new certificate")
 		cert, err := dcert.DefaultCertificate()
 		if err != nil {
-			return emperror.Wrap(err, "cannot generate default certificate")
+			return errors.Wrap(err, "cannot generate default certificate")
 		}
 		s.srv.TLSConfig = &tls.Config{Certificates: []tls.Certificate{*cert}}
 		s.log.Infof("starting salon digital at %v - https://%s:%v/", s.urlExt.String(), s.host, s.port)

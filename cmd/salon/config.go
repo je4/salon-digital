@@ -1,8 +1,8 @@
 package main
 
 import (
+	"emperror.dev/errors"
 	"github.com/BurntSushi/toml"
-	"github.com/goph/emperror"
 	"os"
 	"path/filepath"
 	"strings"
@@ -63,7 +63,7 @@ func LoadSalonDigitalConfig(fp string, conf *SalonDigitalConfig) error {
 	}
 	_, err := toml.DecodeFile(fp, conf)
 	if err != nil {
-		return emperror.Wrapf(err, "error loading config file %v", fp)
+		return errors.Wrapf(err, "error loading config file %v", fp)
 	}
 	conf.BaseDir = strings.TrimRight(filepath.ToSlash(conf.BaseDir), "/")
 	return nil
