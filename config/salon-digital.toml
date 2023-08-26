@@ -3,8 +3,8 @@
 #basedir = "./web/static"
 #addr = "localhost:84"
 #addrext = "https://localhost/"
-browser = false
-station = false
+browser = true
+station = true
 browserTimeout = "5m"
 browserURL = "http://localhost:8088/digitale-see/"
 user = ""
