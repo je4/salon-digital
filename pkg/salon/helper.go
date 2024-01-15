@@ -1,6 +1,7 @@
 package salon
 
 import (
+	"emperror.dev/errors"
 	"io/fs"
 	"path/filepath"
 	"strings"

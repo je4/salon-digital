@@ -1,9 +1,11 @@
 package salon
 
 import (
+	"emperror.dev/errors"
 	"github.com/Masterminds/sprig"
 	"github.com/gorilla/mux"
 	"github.com/je4/salon-digital/v2/pkg/tplfunctions"
+	"github.com/op/go-logging"
 	"html/template"
 	"io/fs"
 	"net/http"

@@ -1,13 +1,16 @@
 package bangbang
 
 import (
+	"emperror.dev/errors"
 	"encoding/json"
 	"fmt"
 	"github.com/Masterminds/sprig"
+	"github.com/blevesearch/bleve/v2"
 	"github.com/gorilla/mux"
 	"github.com/je4/salon-digital/v2/pkg/salon"
 	"github.com/je4/salon-digital/v2/pkg/tplfunctions"
 	"github.com/je4/zsearch/v2/pkg/search"
+	"github.com/op/go-logging"
 	"golang.org/x/exp/slices"
 	"html/template"
 	"image"
@@ -381,7 +384,7 @@ func (bb *BangBang) GridHandler(w http.ResponseWriter, r *http.Request) {
 	if restrict == "bangbang" {
 		items = []*search.SourceData{}
 		for _, item := range works {
-			if strings.HasPrefix(item.GetTitle(), "BANG BANG:") {
+			if strings.HasPrefix(item.GetTitle().String(), "BANG BANG:") {
 				items = append(items, item)
 			}
 		}

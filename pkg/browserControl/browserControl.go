@@ -2,10 +2,12 @@ package browserControl
 
 import (
 	"context"
+	"emperror.dev/errors"
 	"github.com/chromedp/cdproto/fetch"
 	"github.com/chromedp/cdproto/network"
 	"github.com/chromedp/chromedp"
 	"github.com/je4/bremote/v2/browser"
+	"github.com/op/go-logging"
 	"io/ioutil"
 	"net/url"
 	"path/filepath"
