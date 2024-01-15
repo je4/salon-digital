@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/blevesearch/bleve/v2"
 	"github.com/je4/salon-digital/v2/pkg/tplfunctions"
 	lm "github.com/je4/utils/v2/pkg/logger"
 	"github.com/je4/zsearch/v2/pkg/search"
