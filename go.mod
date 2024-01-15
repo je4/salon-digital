@@ -2,8 +2,6 @@ module github.com/je4/salon-digital/v2
 
 go 1.21
 
-replace github.com/je4/salon-digital/v2 => ./
-
 require (
 	emperror.dev/errors v0.8.1
 	github.com/BurntSushi/toml v1.3.2
